@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>3D Shape Stacker – Cone & Cylinder with Full Base Ellipses</title>
+  <title>3D Shape Stacker – Complete Shapes with Updated Pyramid</title>
   <style>
     body {
       font-family: sans-serif;
@@ -115,7 +115,7 @@
     ctx.lineCap = 'round';
     ctx.lineWidth = 2;
 
-    // --- Dynamic Parameter Panel (unchanged) ---
+    // --- Dynamic Parameter Panel ---
     function updateShapeParams() {
       const type = shapeTypeSelect.value;
       if (type === 'cone' || type === 'cylinder') {
@@ -233,7 +233,7 @@
     shapeTypeSelect.addEventListener('change', updateShapeParams);
     updateShapeParams();
 
-    // --- Add or Update Shape (unchanged) ---
+    // --- Add or Update Shape ---
     addShapeBtn.addEventListener('click', addOrUpdateShape);
     function addOrUpdateShape() {
       const type = shapeTypeSelect.value;
@@ -293,7 +293,7 @@
       drawScene();
     }
 
-    // --- Delete, Move, and Edit Controls (unchanged) ---
+    // --- Delete, Move, and Edit Controls ---
     window.deleteShape = function(index) {
       shapes.splice(index, 1);
       updateStackElevations();
@@ -371,7 +371,7 @@
       });
     }
 
-    // --- Compute Shape Properties (unchanged) ---
+    // --- Compute Shape Properties ---
     function computeShapeProperties(shape) {
       let computed = {};
       if (shape.type === 'cone') {
@@ -393,7 +393,7 @@
         if (baseType === 'square') {
           const a = parseFloat(shape.params.side);
           const baseArea = a * a;
-          const s = Math.sqrt((a/2)**2 + h*h);
+          const s = Math.sqrt((a/2)**2 + h * h);
           computed.lateralArea = 2 * a * s;
           computed.totalArea = baseArea + computed.lateralArea;
           computed.volume = (1/3) * baseArea * h;
@@ -401,24 +401,24 @@
           const w = parseFloat(shape.params.width);
           const d = parseFloat(shape.params.depth);
           const baseArea = w * d;
-          const s1 = Math.sqrt((d/2)**2 + h*h);
-          const s2 = Math.sqrt((w/2)**2 + h*h);
+          const s1 = Math.sqrt((d/2)**2 + h * h);
+          const s2 = Math.sqrt((w/2)**2 + h * h);
           computed.lateralArea = w * s1 + d * s2;
           computed.totalArea = baseArea + computed.lateralArea;
           computed.volume = (1/3) * baseArea * h;
         } else if (baseType === 'triangle') {
           const a = parseFloat(shape.params.side);
           const baseArea = (Math.sqrt(3)/4) * a * a;
-          const s = Math.sqrt(h*h + (a/Math.sqrt(3))**2);
-          computed.lateralArea = (3 * a * s)/2;
+          const s = Math.sqrt(h * h + (a/Math.sqrt(3))**2);
+          computed.lateralArea = (3 * a * s) / 2;
           computed.totalArea = baseArea + computed.lateralArea;
           computed.volume = (1/3) * baseArea * h;
         } else if (baseType === 'n-gon') {
           const n = parseInt(shape.params.n);
           const a = parseFloat(shape.params.side);
-          const baseArea = (n * a * a)/(4 * Math.tan(Math.PI/n));
-          const R = a/(2 * Math.sin(Math.PI/n));
-          const s = Math.sqrt(h*h + R*R);
+          const baseArea = (n * a * a) / (4 * Math.tan(Math.PI/n));
+          const R = a / (2 * Math.sin(Math.PI/n));
+          const s = Math.sqrt(h * h + R * R);
           computed.lateralArea = 0.5 * n * a * s;
           computed.totalArea = baseArea + computed.lateralArea;
           computed.volume = (1/3) * baseArea * h;
@@ -448,7 +448,7 @@
         } else if (baseType === 'n-gon') {
           const n = parseInt(shape.params.n);
           const a = parseFloat(shape.params.side);
-          const baseArea = (n * a * a)/(4 * Math.tan(Math.PI/n));
+          const baseArea = (n * a * a) / (4 * Math.tan(Math.PI/n));
           computed.lateralArea = n * a * h;
           computed.totalArea = 2 * baseArea + computed.lateralArea;
           computed.volume = baseArea * h;
@@ -456,9 +456,9 @@
           const b1 = parseFloat(shape.params.base1);
           const b2 = parseFloat(shape.params.base2);
           const tH = parseFloat(shape.params.trapezeHeight);
-          const baseArea = ((b1 + b2)/2) * tH;
-          const side = Math.sqrt(((b2-b1)/2)**2 + tH*tH);
-          computed.lateralArea = (b1 + b2 + 2*side) * h;
+          const baseArea = ((b1 + b2) / 2) * tH;
+          const side = Math.sqrt(((b2 - b1) / 2)**2 + tH * tH);
+          computed.lateralArea = (b1 + b2 + 2 * side) * h;
           computed.totalArea = 2 * baseArea + computed.lateralArea;
           computed.volume = baseArea * h;
         }
@@ -502,55 +502,116 @@
       upper.pop();
       return lower.concat(upper);
     }
+//pasted code to fix prisms:
+    // Helper: Compute the midpoint between two points (assumes same y)
+    function computeMidpoint(pt1, pt2) {
+      return {
+        x: (pt1.x + pt2.x) / 2,
+        y: pt1.y,
+        z: (pt1.z + pt2.z) / 2
+      };
+    }
 
-    // --- Draw Silhouette (convex hull) ---
-    function drawSilhouette(samplePoints, ctx, origin, scale) {
-      const hull = computeConvexHull(samplePoints);
+// Helper: Draw a polygon in dotted lines given an array of points
+    function drawPolygonDotted(points, origin, scale) {
+      ctx.setLineDash([10, 10]);
       ctx.beginPath();
-      for (let i = 0; i < hull.length; i++) {
-        let pt = hull[i];
-        let X = origin.x + pt.proj.x * scale;
-        let Y = origin.y + pt.proj.y * scale;
+      for (let i = 0; i < points.length; i++) {
+        let p = project(points[i].x, points[i].y, points[i].z);
+        let X = origin.x + p.x * scale;
+        let Y = origin.y + p.y * scale;
         if (i === 0) ctx.moveTo(X, Y);
         else ctx.lineTo(X, Y);
       }
       ctx.closePath();
       ctx.stroke();
-    }
-
-    // --- Isometric Projection ---
-    function project(x, y, z) {
-      const angle = Math.PI / 6; // 30°
-      const isoX = (x - z) * Math.cos(angle);
-      const isoY = y + (x + z) * Math.sin(angle);
-      return { x: isoX, y: -isoY };
-    }
-
-    // --- Draw Dimension Line ---
-    function drawDimensionLine(ctx, origin, scale, point1, point2, text) {
-      const p1 = project(point1.x, point1.y, point1.z);
-      const p2 = project(point2.x, point2.y, point2.z);
-      const x1 = origin.x + p1.x * scale;
-      const y1 = origin.y + p1.y * scale;
-      const x2 = origin.x + p2.x * scale;
-      const y2 = origin.y + p2.y * scale;
-      ctx.save();
-      ctx.lineWidth = 2;
-      ctx.setLineDash([10,10]);
-      ctx.strokeStyle = 'blue';
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = 'blue';
-      ctx.font = "12px sans-serif";
-      const midX = (x1 + x2) / 2;
-      const midY = (y1 + y2) / 2;
-      ctx.fillText(text, midX + 5, midY - 5);
-      ctx.restore();
     }
 
+// Updated drawPrism() function
+    function drawPrism(shape, ctx, origin, scale) {
+      const bottomY = shape.bottom;
+      const topY = shape.top;
+      const baseType = shape.params.baseType;
+      let bottomPoints = [];
+
+      // Compute the base vertices based on the selected base type.
+      if (baseType === 'square') {
+        const a = parseFloat(shape.params.side);
+        bottomPoints = [
+          { x: -a/2, y: bottomY, z: -a/2 },
+          { x: a/2, y: bottomY, z: -a/2 },
+          { x: a/2, y: bottomY, z: a/2 },
+          { x: -a/2, y: bottomY, z: a/2 }
+        ];
+      } else if (baseType === 'rectangle') {
+        const w = parseFloat(shape.params.width);
+        const d = parseFloat(shape.params.depth);
+        bottomPoints = [
+          { x: -w/2, y: bottomY, z: -d/2 },
+          { x: w/2, y: bottomY, z: -d/2 },
+          { x: w/2, y: bottomY, z: d/2 },
+          { x: -w/2, y: bottomY, z: d/2 }
+        ];
+      } else if (baseType === 'triangle') {
+        const a = parseFloat(shape.params.side);
+        for (let i = 0; i < 3; i++) {
+          let angle = -Math.PI/2 + i * (2*Math.PI/3);
+          bottomPoints.push({ x: a * Math.cos(angle), y: bottomY, z: a * Math.sin(angle) });
+        }
+      } else if (baseType === 'n-gon') {
+        const n = parseInt(shape.params.n);
+        const a = parseFloat(shape.params.side);
+        const R = a / (2 * Math.sin(Math.PI/n));
+        for (let i = 0; i < n; i++) {
+          let angle = -Math.PI/2 + i * (2*Math.PI/n);
+          bottomPoints.push({ x: R * Math.cos(angle), y: bottomY, z: R * Math.sin(angle) });
+        }
+      } else if (baseType === 'trapeze') {
+        const b1 = parseFloat(shape.params.base1);
+        const b2 = parseFloat(shape.params.base2);
+        const tH = parseFloat(shape.params.trapezeHeight);
+        bottomPoints = [
+          { x: -b2/2, y: bottomY, z: -tH/2 },
+          { x: b2/2, y: bottomY, z: -tH/2 },
+          { x: b1/2, y: bottomY, z: tH/2 },
+          { x: -b1/2, y: bottomY, z: tH/2 }
+        ];
+      }
+
+      // Draw the bottom base outline as a dotted polygon.
+      drawPolygonDotted(bottomPoints, origin, scale);
+
+      // For an n-gon, draw the base apothem dimension (from the base center to the midpoint of the first edge).
+      if (baseType === 'n-gon') {
+        const baseCenter = { x: 0, y: bottomY, z: 0 };  // Assuming the base is centered at (0, bottomY, 0)
+        const midEdge = computeMidpoint(bottomPoints[0], bottomPoints[1]);
+        const baseApothem = Math.sqrt(midEdge.x * midEdge.x + midEdge.z * midEdge.z);
+        drawDimensionLine(ctx, origin, scale, baseCenter, midEdge, "a: " + baseApothem.toFixed(2) + " " + shape.unit);
+      }
+
+      // Draw the vertical (height) dimension from the base center to the top base center.
+      const bottomCenter = { x: 0, y: bottomY, z: 0 };
+      const topCenter = { x: 0, y: topY, z: 0 };
+      drawDimensionLine(ctx, origin, scale, bottomCenter, topCenter, "h: " + Math.abs(topY - bottomY).toFixed(2) + " " + shape.unit);
+
+      // For additional information, label one of the base's side lengths.
+      // We'll choose the "left" edge: the edge whose midpoint has the smallest x value.
+      let leftEdge = null;
+      bottomPoints.forEach((pt, i) => {
+        let next = bottomPoints[(i + 1) % bottomPoints.length];
+        let mid = computeMidpoint(pt, next);
+        if (!leftEdge || mid.x < leftEdge.mid.x) {
+          leftEdge = { mid: mid, pt1: pt, pt2: next };
+        }
+      });
+      const sideLength = Math.sqrt((leftEdge.pt1.x - leftEdge.pt2.x)**2 + (leftEdge.pt1.z - leftEdge.pt2.z)**2);
+      drawDimensionLine(ctx, origin, scale, leftEdge.pt1, leftEdge.pt2, "s: " + sideLength.toFixed(2) + " " + shape.unit);
+    }
+
+
+
+// end of pasted code
     // --- Draw Full Base Ellipse in Dotted Lines ---
     // This function draws the complete base circle (projected as an ellipse) in dotted style.
     function drawFullBaseEllipseDotted(r, yBase, origin, scale) {
@@ -575,9 +636,6 @@
       ctx.stroke();
       ctx.setLineDash([]);
     }
-
-    // --- Draw Cone ---
-    // We draw the lateral silhouette (using a thicker solid line) and then overlay the full base ellipse (dotted).
     function drawCone(shape, ctx, origin, scale) {
       const r = parseFloat(shape.params.radius);
       const bottomY = shape.bottom;
@@ -684,12 +742,88 @@
         Math.abs(topY - bottomY).toFixed(2) + " " + shape.unit);
     }
 
-    // --- (Pyramid, Prism, Sphere routines remain unchanged) ---
+    // --- Draw Silhouette (convex hull) ---
+    function drawSilhouette(samplePoints, ctx, origin, scale) {
+      const hull = computeConvexHull(samplePoints);
+      ctx.beginPath();
+      for (let i = 0; i < hull.length; i++) {
+        let pt = hull[i];
+        let X = origin.x + pt.proj.x * scale;
+        let Y = origin.y + pt.proj.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    // --- Isometric Projection ---
+    function project(x, y, z) {
+      const angle = Math.PI / 6; // 30°
+      const isoX = (x - z) * Math.cos(angle);
+      const isoY = y + (x + z) * Math.sin(angle);
+      return { x: isoX, y: -isoY };
+    }
+
+    // --- Draw Dimension Line ---
+    function drawDimensionLine(ctx, origin, scale, point1, point2, text) {
+      const p1 = project(point1.x, point1.y, point1.z);
+      const p2 = project(point2.x, point2.y, point2.z);
+      const x1 = origin.x + p1.x * scale;
+      const y1 = origin.y + p1.y * scale;
+      const x2 = origin.x + p2.x * scale;
+      const y2 = origin.y + p2.y * scale;
+      ctx.save();
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10,10]);
+      ctx.strokeStyle = 'blue';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'blue';
+      ctx.font = "12px sans-serif";
+      const midX = (x1 + x2) / 2;
+      const midY = (y1 + y2) / 2;
+      ctx.fillText(text, midX + 5, midY - 5);
+      ctx.restore();
+    }
+
+    // --- Helper: Draw Polygon in Dotted Lines ---
+    function drawPolygonDotted(points, origin, scale) {
+      ctx.setLineDash([10,10]);
+      ctx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        let p = project(points[i].x, points[i].y, points[i].z);
+        let X = origin.x + p.x * scale;
+        let Y = origin.y + p.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // --- Helper: Compute Midpoint Between Two Points ---
+    function computeMidpoint(pt1, pt2) {
+      return { x: (pt1.x + pt2.x) / 2, y: pt1.y, z: (pt1.z + pt2.z) / 2 };
+    }
+
+    // --- Draw Pyramid ---
+    // This routine draws:
+    // 1. The base polygon in dotted lines.
+    // 2. If the base is an n‑gon, a dimension line for the base apothem (from the base center to the midpoint of the first edge).
+    // 3. The lateral (slant) height from the midpoint of the "front" edge (the one whose midpoint has the smallest world‑space z) to the apex.
+    // 4. The length of one of the base’s sides (the "left" edge, whose midpoint has the smallest x).
+    // 5. The vertical height from the base center to the apex.
     function drawPyramid(shape, ctx, origin, scale) {
       const bottomY = shape.bottom;
       const topY = shape.top;
       const baseType = shape.params.baseType;
       let basePoints = [];
+
       if (baseType === 'square') {
         const a = parseFloat(shape.params.side);
         basePoints = [
@@ -710,37 +844,129 @@
       } else if (baseType === 'triangle') {
         const a = parseFloat(shape.params.side);
         for (let i = 0; i < 3; i++) {
-          let angle = -Math.PI/2 + i*(2*Math.PI/3);
-          basePoints.push({ x: a*Math.cos(angle), y: bottomY, z: a*Math.sin(angle) });
+          let angle = -Math.PI/2 + i * (2 * Math.PI / 3);
+          basePoints.push({ x: a * Math.cos(angle), y: bottomY, z: a * Math.sin(angle) });
         }
       } else if (baseType === 'n-gon') {
         const n = parseInt(shape.params.n);
         const a = parseFloat(shape.params.side);
-        const R = a/(2*Math.sin(Math.PI/n));
+        const R = a / (2 * Math.sin(Math.PI / n));
         for (let i = 0; i < n; i++) {
-          let angle = -Math.PI/2 + i*(2*Math.PI/n);
-          basePoints.push({ x: R*Math.cos(angle), y: bottomY, z: R*Math.sin(angle) });
+          let angle = -Math.PI/2 + i * (2 * Math.PI / n);
+          basePoints.push({ x: R * Math.cos(angle), y: bottomY, z: R * Math.sin(angle) });
         }
       }
+
+      // Draw lateral silhouette (base outline + apex)
       let samplePoints = [];
       basePoints.forEach(pt => {
         samplePoints.push({ world: pt, proj: project(pt.x, pt.y, pt.z) });
       });
       samplePoints.push({ world: { x: 0, y: topY, z: 0 }, proj: project(0, topY, 0) });
       drawSilhouette(samplePoints, ctx, origin, scale);
-      let frontVertex = basePoints.reduce((prev, curr) => (curr.z > prev.z ? curr : prev));
-      const dist = Math.sqrt(frontVertex.x**2 + frontVertex.z**2);
-      drawDimensionLine(ctx, origin, scale, { x: 0, y: bottomY, z: 0 }, frontVertex, dist.toFixed(2) + " " + shape.unit);
-      drawDimensionLine(ctx, origin, scale, { x: 0, y: bottomY, z: 0 }, { x: 0, y: topY, z: 0 }, Math.abs(topY - bottomY).toFixed(2) + " " + shape.unit);
-      const slant = Math.sqrt(dist**2 + (topY - bottomY)**2);
-      drawDimensionLine(ctx, origin, scale, frontVertex, { x: 0, y: topY, z: 0 }, slant.toFixed(2) + " " + shape.unit);
+
+      // Draw full base outline as dotted polygon.
+      drawPolygonDotted(basePoints, origin, scale);
+
+      // Base center is assumed at (0, bottomY, 0) for a centered, regular polygon.
+      const baseCenter = { x: 0, y: bottomY, z: 0 };
+
+      // If the base is an n‑gon, draw the base apothem (from center to midpoint of first edge).
+      if (baseType === 'n-gon') {
+        const midEdge = computeMidpoint(basePoints[0], basePoints[1]);
+        const baseApothem = Math.sqrt(midEdge.x * midEdge.x + midEdge.z * midEdge.z);
+        drawDimensionLine(ctx, origin, scale, baseCenter, midEdge, "a: " + baseApothem.toFixed(2) + " " + shape.unit);
+      }
+
+      // Determine the "front" edge: the edge whose midpoint has the smallest world z (i.e. most toward the viewer).
+      let frontEdge = null;
+      basePoints.forEach((pt, i) => {
+        const next = basePoints[(i + 1) % basePoints.length];
+        const mid = computeMidpoint(pt, next);
+        if (!frontEdge || mid.z < frontEdge.mid.z) {
+          frontEdge = { mid: mid, pt1: pt, pt2: next };
+        }
+      });
+      // Slant height is the distance from the midpoint of the front edge to the apex.
+      const horizontal = Math.sqrt(frontEdge.mid.x * frontEdge.mid.x + frontEdge.mid.z * frontEdge.mid.z);
+      const slant = Math.sqrt(horizontal * horizontal + (topY - bottomY) ** 2);
+      drawDimensionLine(ctx, origin, scale, frontEdge.mid, { x: 0, y: topY, z: 0 }, "l: " + slant.toFixed(2) + " " + shape.unit);
+
+      // Determine the "left" edge: the edge whose midpoint has the smallest world x (most negative).
+      let leftEdge = null;
+      basePoints.forEach((pt, i) => {
+        const next = basePoints[(i + 1) % basePoints.length];
+        const mid = computeMidpoint(pt, next);
+        if (!leftEdge || mid.x < leftEdge.mid.x) {
+          leftEdge = { mid: mid, pt1: pt, pt2: next };
+        }
+      });
+      const sideLength = Math.sqrt((leftEdge.pt1.x - leftEdge.pt2.x) ** 2 + (leftEdge.pt1.z - leftEdge.pt2.z) ** 2);
+      drawDimensionLine(ctx, origin, scale, leftEdge.pt1, leftEdge.pt2, "s: " + sideLength.toFixed(2) + " " + shape.unit);
+
+      // Vertical dimension from base center to apex.
+      drawDimensionLine(ctx, origin, scale, baseCenter, { x: 0, y: topY, z: 0 }, Math.abs(topY - bottomY).toFixed(2) + " " + shape.unit);
+    }
+//pasted code prims
+    // Helper: Compute the midpoint between two points (assumes same y)
+    function computeMidpoint(pt1, pt2) {
+      return {
+        x: (pt1.x + pt2.x) / 2,
+        y: pt1.y,
+        z: (pt1.z + pt2.z) / 2
+      };
     }
 
+// Helper: Draw a polygon in dotted lines given an array of points
+    function drawPolygonDotted(points, origin, scale) {
+      ctx.setLineDash([10, 10]);
+      ctx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        let p = project(points[i].x, points[i].y, points[i].z);
+        let X = origin.x + p.x * scale;
+        let Y = origin.y + p.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+// Updated drawPrism() function
+    // Helper: Compute the midpoint between two points (assumes same y)
+    function computeMidpoint(pt1, pt2) {
+      return {
+        x: (pt1.x + pt2.x) / 2,
+        y: pt1.y,
+        z: (pt1.z + pt2.z) / 2
+      };
+    }
+
+// Helper: Draw a polygon in dotted lines given an array of points.
+    function drawPolygonDotted(points, origin, scale) {
+      ctx.setLineDash([10, 10]);
+      ctx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        let p = project(points[i].x, points[i].y, points[i].z);
+        let X = origin.x + p.x * scale;
+        let Y = origin.y + p.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+// Updated drawPrism() function:
     function drawPrism(shape, ctx, origin, scale) {
       const bottomY = shape.bottom;
       const topY = shape.top;
       const baseType = shape.params.baseType;
       let bottomPoints = [];
+
+      // Compute the base vertices based on the selected base type.
       if (baseType === 'square') {
         const a = parseFloat(shape.params.side);
         bottomPoints = [
@@ -761,16 +987,16 @@
       } else if (baseType === 'triangle') {
         const a = parseFloat(shape.params.side);
         for (let i = 0; i < 3; i++) {
-          let angle = -Math.PI/2 + i*(2*Math.PI/3);
-          bottomPoints.push({ x: a*Math.cos(angle), y: bottomY, z: a*Math.sin(angle) });
+          let angle = -Math.PI/2 + i * (2 * Math.PI / 3);
+          bottomPoints.push({ x: a * Math.cos(angle), y: bottomY, z: a * Math.sin(angle) });
         }
       } else if (baseType === 'n-gon') {
         const n = parseInt(shape.params.n);
         const a = parseFloat(shape.params.side);
-        const R = a/(2*Math.sin(Math.PI/n));
+        const R = a / (2 * Math.sin(Math.PI / n));
         for (let i = 0; i < n; i++) {
-          let angle = -Math.PI/2 + i*(2*Math.PI/n);
-          bottomPoints.push({ x: R*Math.cos(angle), y: bottomY, z: R*Math.sin(angle) });
+          let angle = -Math.PI/2 + i * (2 * Math.PI / n);
+          bottomPoints.push({ x: R * Math.cos(angle), y: bottomY, z: R * Math.sin(angle) });
         }
       } else if (baseType === 'trapeze') {
         const b1 = parseFloat(shape.params.base1);
@@ -783,47 +1009,100 @@
           { x: -b1/2, y: bottomY, z: tH/2 }
         ];
       }
+
+      // Draw the bottom base outline as a dotted polygon.
+      drawPolygonDotted(bottomPoints, origin, scale);
+
+      // If the base is an n-gon, draw the base apothem dimension.
+      if (baseType === 'n-gon') {
+        const baseCenter = { x: 0, y: bottomY, z: 0 }; // Assumed center
+        const midEdge = computeMidpoint(bottomPoints[0], bottomPoints[1]);
+        const baseApothem = Math.sqrt(midEdge.x * midEdge.x + midEdge.z * midEdge.z);
+        drawDimensionLine(ctx, origin, scale, baseCenter, midEdge, "a: " + baseApothem.toFixed(2) + " " + shape.unit);
+      }
+
+      // Draw the vertical (height) dimension from the bottom center to the top center.
+      const bottomCenter = { x: 0, y: bottomY, z: 0 };
+      const topCenter = { x: 0, y: topY, z: 0 };
+      drawDimensionLine(ctx, origin, scale, bottomCenter, topCenter, "h: " + Math.abs(topY - bottomY).toFixed(2) + " " + shape.unit);
+
+      // Determine the "left" edge: the edge whose midpoint has the smallest x.
+      let leftEdge = null;
+      bottomPoints.forEach((pt, i) => {
+        let next = bottomPoints[(i + 1) % bottomPoints.length];
+        let mid = computeMidpoint(pt, next);
+        if (!leftEdge || mid.x < leftEdge.mid.x) {
+          leftEdge = { mid: mid, pt1: pt, pt2: next };
+        }
+      });
+      const sideLength = Math.sqrt((leftEdge.pt1.x - leftEdge.pt2.x) ** 2 + (leftEdge.pt1.z - leftEdge.pt2.z) ** 2);
+      drawDimensionLine(ctx, origin, scale, leftEdge.pt1, leftEdge.pt2, "s: " + sideLength.toFixed(2) + " " + shape.unit);
+
+      // *** NEW: Draw the top face outline as a solid polygon ***
+      const topPoints = bottomPoints.map(pt => ({ x: pt.x, y: topY, z: pt.z }));
+      ctx.beginPath();
+      for (let i = 0; i < topPoints.length; i++) {
+        let p = project(topPoints[i].x, topPoints[i].y, topPoints[i].z);
+        let X = origin.x + p.x * scale;
+        let Y = origin.y + p.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+
+      // Finally, to capture the overall prism silhouette (sides) you can optionally combine bottom and top points:
       let samplePoints = [];
       bottomPoints.forEach(pt => {
         samplePoints.push({ world: pt, proj: project(pt.x, pt.y, pt.z) });
-        samplePoints.push({ world: { x: pt.x, y: topY, z: pt.z }, proj: project(pt.x, topY, pt.z) });
+      });
+      topPoints.forEach(pt => {
+        samplePoints.push({ world: pt, proj: project(pt.x, pt.y, pt.z) });
       });
       drawSilhouette(samplePoints, ctx, origin, scale);
-      drawDimensionLine(ctx, origin, scale,
-        { x: 0, y: bottomY, z: 0 },
-        { x: 0, y: topY, z: 0 },
-        Math.abs(topY - bottomY).toFixed(2) + " " + shape.unit);
     }
+
 
     function drawSphere(shape, ctx, origin, scale) {
       const r = parseFloat(shape.params.radius);
       const bottomY = shape.bottom;
       const topY = shape.top;
+      // Compute the sphere's center in world coordinates.
       const centerY = bottomY + r;
       const centerP = project(0, centerY, 0);
       const cx = origin.x + centerP.x * scale;
       const cy = origin.y + centerP.y * scale;
+
       ctx.lineWidth = 2;
+
+      // Draw the outer sphere outline (solid circle).
       ctx.beginPath();
       ctx.arc(cx, cy, r * scale, 0, 2 * Math.PI);
       ctx.stroke();
+
+      // Draw the "equator" (middle ellipse) as dotted.
+      ctx.setLineDash([10, 10]);
       ctx.beginPath();
       ctx.ellipse(cx, cy, r * scale, r * scale * 0.5, 0, 0, 2 * Math.PI);
       ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw the dimension line for the sphere's radius.
+      // Instead of using (r, centerY, 0), compute the point on the ellipse's rightmost edge.
+      // Solve for (X, centerY, Z) such that:
+      //   (X - Z)*cos30 = r  and  X + Z = 0.
+      // This yields X = r/(2*cos30) = r/√3 and Z = -r/√3.
+      const endpoint = { x: r/Math.sqrt(3), y: centerY, z: -r/Math.sqrt(3) };
       drawDimensionLine(ctx, origin, scale,
         { x: 0, y: centerY, z: 0 },
-        { x: r, y: centerY, z: 0 },
+        endpoint,
         r.toFixed(2) + " " + shape.unit);
-      drawDimensionLine(ctx, origin, scale,
-        { x: 0, y: bottomY, z: 0 },
-        { x: 0, y: topY, z: 0 },
-        (2*r).toFixed(2) + " " + shape.unit);
+      
     }
-
     // --- Drawing the Scene ---
     function drawScene() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const origin = { x: canvas.width/2, y: canvas.height/2+100 };
+      const origin = { x: canvas.width / 2, y: canvas.height / 2 + 100 };
       const scale = 20;
       ctx.lineWidth = 2;
       ctx.lineJoin = 'round';
@@ -839,11 +1118,11 @@
       });
     }
 
-    // Initial draw and update list.
+  
     drawScene();
     updateShapeList();
 
-    // --- Update Shape List Display ---
+   
     function updateShapeList() {
       let html = "<h3>Stacked Shapes</h3>";
       shapes.forEach((shape, index) => {
@@ -867,6 +1146,7 @@
       });
       shapeListDiv.innerHTML = html;
     }
+
   });
 </script>
 </body>
