@@ -872,6 +872,22 @@
       resultDiv.innerText = result;
     }
 
+document.getElementById("btn2D").addEventListener("click", () => { showSection("2D"); });
+document.getElementById("btn3D").addEventListener("click", () => { showSection("3D"); });
+document.getElementById("btnMeasureArea").addEventListener("click", () => { showSection("measureArea"); });
+document.getElementById("btnMeasureVolume").addEventListener("click", () => { showSection("measureVolume"); });
+document.getElementById("btnQuit").addEventListener("click", exitProgram);
+
+document.getElementById("btnCompute2D").addEventListener("click", compute2D);
+document.getElementById("btnCompute3D").addEventListener("click", compute3D);
+document.getElementById("btnComputeMeasureArea").addEventListener("click", computeMeasuresArea);
+document.getElementById("btnComputeMeasureVolume").addEventListener("click", computeMeasuresVolume);
+
+document.getElementById("btnBack2D").addEventListener("click", backToMain);
+document.getElementById("btnBack3D").addEventListener("click", backToMain);
+document.getElementById("btnBackMeasureArea").addEventListener("click", backToMain);
+document.getElementById("btnBackMeasureVolume").addEventListener("click", backToMain);
+
     // ============================================================
     // 8) Attach event listeners for buttons (if not already attached)
     // (They were attached via addEventListener in our HTML markup above.)
