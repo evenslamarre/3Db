@@ -3,758 +3,457 @@
 <head>
   <meta charset="UTF-8">
   <title>Calcul d'Aire, Volume et Mesures</title>
+  <!-- Intégration de MathJax pour le rendu des formules -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 1em; }
-    pre { background: #f0f0f0; padding: 1em; }
+    /* Styles de base pour occuper toute la page et être responsive */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
+    }
+    header {
+      background: #2d89ef;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    nav {
+      background: #1b5eaa;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    nav button {
+      background: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+    nav button:hover {
+      background: #e0e0e0;
+    }
+    main {
+      padding: 1rem 2rem;
+      overflow-y: auto;
+      height: calc(100% - 150px);
+    }
+    .section {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .section.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+    input, select {
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button.action {
+      background: #2d89ef;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button.action:hover {
+      background: #1b5eaa;
+    }
+    pre.result {
+      background: #eef;
+      padding: 1rem;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      margin-top: 1rem;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
-  <h1>Calcul d'Aire, Volume et Mesures</h1>
-  <p>Ouvrez la console du navigateur (F12) pour voir certaines sorties de debug.</p>
+  <header>
+    <h1>Calcul d'Aire, Volume et Mesures</h1>
+  </header>
+  <nav>
+    <button data-target="menuPrincipal">Menu Principal</button>
+    <button data-target="formes2D">Formes 2D</button>
+    <button data-target="solides3D">Solides 3D</button>
+    <button data-target="mesuresAire">Mesures par Aire</button>
+    <button data-target="mesuresVolume">Mesures par Volume</button>
+  </nav>
+  <main>
+    <!-- Menu Principal -->
+    <section id="menuPrincipal" class="section active">
+      <h2>Menu Principal</h2>
+      <p>Sélectionnez une fonctionnalité ci-dessus.</p>
+    </section>
+
+    <!-- Formes 2D -->
+    <section id="formes2D" class="section">
+      <h2>Formes 2D</h2>
+      <p>Fonctionnalité de calcul d'aire et périmètre pour les formes 2D.</p>
+      <p>Pour cet exemple, nous présentons le calcul pour un carré :</p>
+      <div class="form-group">
+        <label for="carreCote">Longueur du coté :</label>
+        <input type="number" id="carreCote" placeholder="Entrez la valeur">
+      </div>
+      <button class="action" onclick="calculerCarre()">Calculer</button>
+      <pre id="resultCarre" class="result"></pre>
+    </section>
+
+    <!-- Solides 3D -->
+    <section id="solides3D" class="section">
+      <h2>Solides 3D</h2>
+      <p>Choisissez un solide 3D et saisissez ses dimensions.</p>
+      <div class="form-group">
+        <label for="solideType">Type de solide :</label>
+        <select id="solideType">
+          <option value="prisme">Prisme (base au choix)</option>
+          <option value="cube">Cube</option>
+          <option value="cone">Cône / Pyramide</option>
+          <option value="sphere">Sphère</option>
+          <option value="cylindre">Cylindre</option>
+        </select>
+      </div>
+      <div id="solideForm"></div>
+      <pre id="resultSolide" class="result"></pre>
+    </section>
+
+    <!-- Mesures à partir d'une aire -->
+    <section id="mesuresAire" class="section">
+      <h2>Mesures à partir d'une Aire</h2>
+      <div class="form-group">
+        <label for="inputAire">Valeur d'aire (u²) :</label>
+        <input type="number" id="inputAire" placeholder="Entrez une aire">
+      </div>
+      <button class="action" onclick="calculerMesuresAire()">Calculer mesures</button>
+      <pre id="resultAire" class="result"></pre>
+    </section>
+
+    <!-- Mesures à partir d'un volume -->
+    <section id="mesuresVolume" class="section">
+      <h2>Mesures à partir d'un Volume</h2>
+      <div class="form-group">
+        <label for="inputVolume">Valeur de volume (u³) :</label>
+        <input type="number" id="inputVolume" placeholder="Entrez un volume">
+      </div>
+      <button class="action" onclick="calculerMesuresVolume()">Calculer mesures</button>
+      <pre id="resultVolume" class="result"></pre>
+    </section>
+  </main>
+
   <script>
-    // Utility function : retourne true si le chiffre des milliemes est 0 ou 1.
+    // Navigation entre sections
+    document.querySelectorAll("nav button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.getAttribute("data-target");
+        document.querySelectorAll("main .section").forEach(sec => {
+          sec.classList.remove("active");
+        });
+        document.getElementById(target).classList.add("active");
+      });
+    });
+
+    // --- Exemple de calcul pour un carré (Formes 2D) ---
+    function calculerCarre() {
+      const cote = parseFloat(document.getElementById("carreCote").value);
+      if (isNaN(cote) || cote <= 0) {
+        document.getElementById("resultCarre").textContent = "Veuillez entrer une valeur positive pour le coté.";
+        return;
+      }
+      const aire = cote * cote;
+      const perimetre = 4 * cote;
+      const result = 
+`Formules du carré :
+\\( A = c^2 \\)
+\\( P = 4 \\times c \\)
+
+Données : \\( c = ${cote} \\)
+
+Résultats :
+\\( A = ${aire} \\quad u^2 \\)
+\\( P = ${perimetre} \\quad u \\)
+`;
+      document.getElementById("resultCarre").textContent = result;
+      MathJax.typesetPromise();
+    }
+
+    // --- Exemple de gestion des solides 3D ---
+    const solideFormContainer = document.getElementById("solideForm");
+    document.getElementById("solideType").addEventListener("change", renderSolideForm);
+    renderSolideForm();
+
+    function renderSolideForm() {
+      const type = document.getElementById("solideType").value;
+      let html = "";
+      switch (type) {
+        case "prisme":
+          html = `
+          <div class="form-group">
+            <label for="prismeBase">Aire de la base (u²) :</label>
+            <input type="number" id="prismeBase" placeholder="Aire de la base">
+          </div>
+          <div class="form-group">
+            <label for="prismeH">Hauteur (u) :</label>
+            <input type="number" id="prismeH" placeholder="Hauteur">
+          </div>
+          `;
+          break;
+        case "cube":
+          html = `
+          <div class="form-group">
+            <label for="cubeCote">Longueur de l'arête (u) :</label>
+            <input type="number" id="cubeCote" placeholder="Arête">
+          </div>
+          `;
+          break;
+        case "cone":
+          html = `
+          <div class="form-group">
+            <label for="coneBase">Pour un cône, entrez le rayon de la base (u) :</label>
+            <input type="number" id="coneRayon" placeholder="Rayon">
+          </div>
+          <div class="form-group">
+            <label for="coneH">Hauteur (u) :</label>
+            <input type="number" id="coneH" placeholder="Hauteur">
+          </div>
+          `;
+          break;
+        case "sphere":
+          html = `
+          <div class="form-group">
+            <label for="sphereRayon">Rayon (u) :</label>
+            <input type="number" id="sphereRayon" placeholder="Rayon">
+          </div>
+          `;
+          break;
+        case "cylindre":
+          html = `
+          <div class="form-group">
+            <label for="cylindreRayon">Rayon de la base (u) :</label>
+            <input type="number" id="cylindreRayon" placeholder="Rayon">
+          </div>
+          <div class="form-group">
+            <label for="cylindreH">Hauteur (u) :</label>
+            <input type="number" id="cylindreH" placeholder="Hauteur">
+          </div>
+          `;
+          break;
+        default:
+          html = "";
+      }
+      solideFormContainer.innerHTML = html;
+    }
+
+    function calculerSolide() {
+      const type = document.getElementById("solideType").value;
+      let result = "";
+      if (type === "prisme") {
+        const baseAire = parseFloat(document.getElementById("prismeBase").value);
+        const h = parseFloat(document.getElementById("prismeH").value);
+        if (isNaN(baseAire) || baseAire <= 0 || isNaN(h) || h <= 0) {
+          result = "Veuillez entrer des valeurs valides pour la base et la hauteur.";
+        } else {
+          const aireLateral = 2 * Math.sqrt(baseAire) * h;
+          const aireTotale = aireLateral + 2 * baseAire;
+          const volume = baseAire * h;
+          result =
+`Prisme :
+\\( A_{lat} = P_{base} \\times h \\) (avec \\( P_{base} = 2\\sqrt{A_{base}} \\) ici par simplification)
+\\( A_{tot} = A_{lat} + 2\\,A_{base} \\)
+\\( V = A_{base} \\times h \\)
+
+Données :
+\\( A_{base} = ${baseAire} \\quad u^2 \\)
+\\( h = ${h} \\quad u \\)
+
+Résultats :
+\\( A_{lat} \\approx ${aireLateral.toFixed(2)} \\quad u^2 \\)
+\\( A_{tot} \\approx ${aireTotale.toFixed(2)} \\quad u^2 \\)
+\\( V \\approx ${volume.toFixed(2)} \\quad u^3 \\)
+`;
+        }
+      } else if (type === "cube") {
+        const cote = parseFloat(document.getElementById("cubeCote").value);
+        if (isNaN(cote) || cote <= 0) {
+          result = "Veuillez entrer une valeur valide pour l'arête.";
+        } else {
+          const aireTot = 6 * cote * cote;
+          const volume = Math.pow(cote, 3);
+          result =
+`Cube :
+\\( A_{tot} = 6\\,c^2 \\)
+\\( V = c^3 \\)
+
+Donnée :
+\\( c = ${cote} \\quad u \\)
+
+Résultats :
+\\( A_{tot} = ${aireTot} \\quad u^2 \\)
+\\( V = ${volume} \\quad u^3 \\)
+`;
+        }
+      } else if (type === "cone") {
+        const r = parseFloat(document.getElementById("coneRayon").value);
+        const h = parseFloat(document.getElementById("coneH").value);
+        if (isNaN(r) || r <= 0 || isNaN(h) || h <= 0) {
+          result = "Veuillez entrer des valeurs valides pour le rayon et la hauteur.";
+        } else {
+          const g = Math.sqrt(r * r + h * h);
+          const aireBase = Math.PI * r * r;
+          const aireLateral = Math.PI * r * g;
+          const aireTot = aireLateral + aireBase;
+          const volume = (1/3) * aireBase * h;
+          result =
+`Cône :
+\\( g = \\sqrt{r^2+h^2} \\)
+\\( A_{base} = \\pi\\,r^2 \\)
+\\( A_{lat} = \\pi\\,r\\,g \\)
+\\( A_{tot} = A_{lat} + A_{base} \\)
+\\( V = \\frac{1}{3}\\,A_{base}\\,h \\)
+
+Données :
+\\( r = ${r} \\quad u \\)
+\\( h = ${h} \\quad u \\)
+
+Calculs :
+\\( g \\approx ${g.toFixed(2)} \\quad u \\)
+\\( A_{base} \\approx ${(aireBase).toFixed(2)} \\quad u^2 \\)
+\\( A_{lat} \\approx ${(aireLateral).toFixed(2)} \\quad u^2 \\)
+\\( A_{tot} \\approx ${(aireTot).toFixed(2)} \\quad u^2 \\)
+\\( V \\approx ${volume.toFixed(2)} \\quad u^3 \\)
+`;
+        }
+      } else if (type === "sphere") {
+        const r = parseFloat(document.getElementById("sphereRayon").value);
+        if (isNaN(r) || r <= 0) {
+          result = "Veuillez entrer un rayon valide.";
+        } else {
+          const aire = 4 * Math.PI * r * r;
+          const volume = (4/3) * Math.PI * Math.pow(r, 3);
+          result =
+`Sphère :
+\\( A = 4\\,\\pi\\,r^2 \\)
+\\( V = \\frac{4}{3}\\,\\pi\\,r^3 \\)
+
+Donnée :
+\\( r = ${r} \\quad u \\)
+
+Résultats :
+\\( A \\approx ${aire.toFixed(2)} \\quad u^2 \\)
+\\( V \\approx ${volume.toFixed(2)} \\quad u^3 \\)
+`;
+        }
+      } else if (type === "cylindre") {
+        const r = parseFloat(document.getElementById("cylindreRayon").value);
+        const h = parseFloat(document.getElementById("cylindreH").value);
+        if (isNaN(r) || r <= 0 || isNaN(h) || h <= 0) {
+          result = "Veuillez entrer des valeurs valides pour le rayon et la hauteur.";
+        } else {
+          const aireBase = Math.PI * r * r;
+          const aireLateral = 2 * Math.PI * r * h;
+          const aireTot = aireLateral + 2 * aireBase;
+          const volume = Math.PI * r * r * h;
+          result =
+`Cylindre :
+\\( A_{base} = \\pi\\,r^2 \\)
+\\( A_{lat} = 2\\,\\pi\\,r\\,h \\)
+\\( A_{tot} = A_{lat} + 2\\,A_{base} \\)
+\\( V = \\pi\\,r^2\\,h \\)
+
+Données :
+\\( r = ${r} \\quad u \\)
+\\( h = ${h} \\quad u \\)
+
+Résultats :
+\\( A_{base} \\approx ${aireBase.toFixed(2)} \\quad u^2 \\)
+\\( A_{lat} \\approx ${aireLateral.toFixed(2)} \\quad u^2 \\)
+\\( A_{tot} \\approx ${aireTot.toFixed(2)} \\quad u^2 \\)
+\\( V \\approx ${volume.toFixed(2)} \\quad u^3 \\)
+`;
+        }
+      }
+      document.getElementById("resultSolide").textContent = result;
+      MathJax.typesetPromise();
+    }
+    // Ajout d'un bouton de calcul pour les solides (s'il n'existe pas déjà)
+    solideFormContainer.insertAdjacentHTML('beforeend', '<button class="action" onclick="calculerSolide()">Calculer</button>');
+
+    // --- Mesures à partir d'une aire ---
+    function calculerMesuresAire() {
+      const aire = parseFloat(document.getElementById("inputAire").value);
+      if (isNaN(aire) || aire <= 0) {
+        document.getElementById("resultAire").textContent = "Veuillez entrer une aire positive.";
+        return;
+      }
+      let output = `Pour une aire \\( A = ${aire} \\quad u^2 \\), voici quelques exemples :\n\n`;
+      // Exemple pour un cône (calcul simplifié)
+      for (let r = 1.0; r <= Math.sqrt(aire); r += 0.1) {
+        let g = (aire - Math.PI * r * r) / (Math.PI * r);
+        if (g > 0 && validThousandths(g)) {
+          output += `Cône : \\( r = ${r.toFixed(1)},\\ g \\approx ${g.toFixed(3)} \\)\n`;
+        }
+      }
+      // Exemple pour une sphère
+      let rSphere = Math.sqrt(aire / (4 * Math.PI));
+      output += `\nSphère : \\( r = \\sqrt{\\frac{A}{4\\pi}} \\approx ${rSphere.toFixed(3)} \\)\n`;
+      document.getElementById("resultAire").textContent = output;
+      MathJax.typesetPromise();
+    }
+
+    // --- Mesures à partir d'un volume ---
+    function calculerMesuresVolume() {
+      const volume = parseFloat(document.getElementById("inputVolume").value);
+      if (isNaN(volume) || volume <= 0) {
+        document.getElementById("resultVolume").textContent = "Veuillez entrer un volume positif.";
+        return;
+      }
+      let output = `Pour un volume \\( V = ${volume} \\quad u^3 \\), voici quelques exemples :\n\n`;
+      // Exemple pour un cône
+      for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
+        let h = (3 * volume) / (Math.PI * r * r);
+        output += `Cône : \\( r = ${r.toFixed(1)},\\ h \\approx ${h.toFixed(3)} \\)\n`;
+      }
+      // Exemple pour une sphère
+      let rSphere = Math.cbrt((3 * volume) / (4 * Math.PI));
+      output += `\nSphère : \\( r = \\sqrt[3]{\\frac{3V}{4\\pi}} \\approx ${rSphere.toFixed(3)} \\)\n`;
+      document.getElementById("resultVolume").textContent = output;
+      MathJax.typesetPromise();
+    }
+
+    // Utilitaire de validation pour les milliemes
     function validThousandths(value) {
-      let digit = Math.floor(Math.abs(value) * 1000) % 10;
+      const digit = Math.floor(Math.abs(value) * 1000) % 10;
       return (digit === 0 || digit === 1);
     }
-
-    // -------------------------------
-    // CLASSES POUR LES FORMES 2D
-    // -------------------------------
-    class BaseShape2D {
-      saisirDonnees() { throw new Error("Not implemented"); }
-      getAire() { throw new Error("Not implemented"); }
-      getPerimetre() { throw new Error("Not implemented"); }
-      afficherFormulesEtResultat() { throw new Error("Not implemented"); }
-    }
-
-    class Carre extends BaseShape2D {
-      constructor() {
-        super();
-        this.cote = 0;
-      }
-      saisirDonnees() {
-        this.cote = parseFloat(prompt("=== CARRE ===\nEntrez la longueur du coté :"));
-      }
-      getAire() { return this.cote * this.cote; }
-      getPerimetre() { return 4.0 * this.cote; }
-      afficherFormulesEtResultat() {
-        let A = this.getAire(), P = this.getPerimetre();
-        let s = "Formules du carré:\n";
-        s += " - Aire: A = c²\n";
-        s += " - Périmètre: P = 4*c\n";
-        s += `Valeur: c = ${this.cote} => Aire = ${A} u²\n         Périmètre = ${P} u`;
-        return s;
-      }
-    }
-
-    class Rectangle extends BaseShape2D {
-      constructor() {
-        super();
-        this.longueur = 0;
-        this.largeur = 0;
-      }
-      saisirDonnees() {
-        this.longueur = parseFloat(prompt("=== RECTANGLE ===\nEntrez la longueur :"));
-        this.largeur = parseFloat(prompt("Entrez la largeur :"));
-      }
-      getAire() { return this.longueur * this.largeur; }
-      getPerimetre() { return 2.0 * (this.longueur + this.largeur); }
-      afficherFormulesEtResultat() {
-        let A = this.getAire(), P = this.getPerimetre();
-        let s = "Formules du rectangle:\n";
-        s += " - Aire: A = l * L\n";
-        s += " - Périmètre: P = 2*(l+L)\n";
-        s += `Valeurs: l = ${this.longueur}, L = ${this.largeur}\n`;
-        s += `=> Aire = ${A} u²\n=> Périmètre = ${P} u`;
-        return s;
-      }
-    }
-
-    class Cercle extends BaseShape2D {
-      constructor() {
-        super();
-        this.rayon = 0;
-      }
-      saisirDonnees() {
-        this.rayon = parseFloat(prompt("=== CERCLE ===\nEntrez le rayon :"));
-      }
-      getAire() { return Math.PI * this.rayon * this.rayon; }
-      getPerimetre() { return 2.0 * Math.PI * this.rayon; }
-      afficherFormulesEtResultat() {
-        let A = this.getAire(), P = this.getPerimetre();
-        let s = "Formules du cercle:\n";
-        s += " - Aire: A = π * r²\n";
-        s += " - Périmètre: P = 2*π*r\n";
-        s += `Valeur: r = ${this.rayon}\n`;
-        s += `=> Aire = ${A} u²\n=> Périmètre = ${P} u`;
-        return s;
-      }
-    }
-
-    class PolygoneRegulier extends BaseShape2D {
-      constructor() {
-        super();
-        this.nbCotes = 0;
-        this.longueurCote = 0;
-      }
-      saisirDonnees() {
-        this.nbCotes = parseInt(prompt("=== POLYGONE REGULIER ===\nEntrez le nombre de côtés (n) :"), 10);
-        this.longueurCote = parseFloat(prompt("Entrez la longueur d'un coté (c) :"));
-      }
-      getApotheme() {
-        return this.longueurCote / (2.0 * Math.tan(Math.PI / this.nbCotes));
-      }
-      getAire() {
-        let a = this.getApotheme();
-        return 0.5 * this.nbCotes * this.longueurCote * a;
-      }
-      getPerimetre() { return this.nbCotes * this.longueurCote; }
-      afficherFormulesEtResultat() {
-        let a = this.getApotheme();
-        let A = this.getAire(), P = this.getPerimetre();
-        let s = `Formules du polygone régulier (${this.nbCotes} côtés):\n`;
-        s += " - Aire: A = (n * c * a)/2\n";
-        s += " - Périmètre: P = n*c\n";
-        s += " - Apotheme: a = c/(2*tan(π/n))\n";
-        s += `Valeurs: n = ${this.nbCotes}, c = ${this.longueurCote}\n`;
-        s += `=> Apotheme = ${a} u\n=> Aire = ${A} u²\n=> Périmètre = ${P} u`;
-        return s;
-      }
-    }
-
-    class TrapezeIsocele extends BaseShape2D {
-      constructor() {
-        super();
-        this.grandeBase = 0;
-        this.petiteBase = 0;
-        this.hauteur = 0;
-      }
-      saisirDonnees() {
-        this.grandeBase = parseFloat(prompt("=== TRAPÈZE ISOCLÈS ===\nEntrez la longueur de la grande base :"));
-        this.petiteBase = parseFloat(prompt("Entrez la longueur de la petite base :"));
-        if (this.grandeBase < this.petiteBase) {
-          // échange si nécessaire
-          let tmp = this.grandeBase;
-          this.grandeBase = this.petiteBase;
-          this.petiteBase = tmp;
-        }
-        this.hauteur = parseFloat(prompt("Entrez la hauteur :"));
-      }
-      getAire() {
-        return ((this.grandeBase + this.petiteBase) / 2.0) * this.hauteur;
-      }
-      getPerimetre() {
-        let diff = (this.grandeBase - this.petiteBase) / 2.0;
-        let cote = Math.sqrt(this.hauteur * this.hauteur + diff * diff);
-        return this.grandeBase + this.petiteBase + 2.0 * cote;
-      }
-      afficherFormulesEtResultat() {
-        let A = this.getAire(), P = this.getPerimetre();
-        let s = "Formules du trapèze isocèle:\n";
-        s += " - Aire: A = ((B+b)/2)*h\n";
-        s += " - Périmètre: P = B + b + 2*c (avec c = sqrt(h² + ((B-b)/2)²))\n";
-        s += `Valeurs: B = ${this.grandeBase}, b = ${this.petiteBase}, h = ${this.hauteur}\n`;
-        s += `=> Aire = ${A} u²\n=> Périmètre = ${P} u`;
-        return s;
-      }
-    }
-
-    class Losange extends BaseShape2D {
-      constructor() {
-        super();
-        this.grandeDiagonale = 0;
-        this.petiteDiagonale = 0;
-      }
-      saisirDonnees() {
-        this.grandeDiagonale = parseFloat(prompt("=== LOSANGE ===\nEntrez la longueur de la grande diagonale :"));
-        this.petiteDiagonale = parseFloat(prompt("Entrez la longueur de la petite diagonale :"));
-        if (this.grandeDiagonale < this.petiteDiagonale) {
-          let tmp = this.grandeDiagonale;
-          this.grandeDiagonale = this.petiteDiagonale;
-          this.petiteDiagonale = tmp;
-        }
-      }
-      getAire() {
-        return (this.grandeDiagonale * this.petiteDiagonale) / 2.0;
-      }
-      getPerimetre() {
-        let demiD = this.grandeDiagonale / 2.0, demid = this.petiteDiagonale / 2.0;
-        let cote = Math.sqrt(demiD * demiD + demid * demid);
-        return 4.0 * cote;
-      }
-      afficherFormulesEtResultat() {
-        let A = this.getAire(), P = this.getPerimetre();
-        let s = "Formules du losange:\n";
-        s += " - Aire: A = (D*d)/2\n";
-        s += " - Périmètre: P = 4*c (avec c = sqrt((D/2)²+(d/2)²))\n";
-        s += `Valeurs: D = ${this.grandeDiagonale}, d = ${this.petiteDiagonale}\n`;
-        s += `=> Aire = ${A} u²\n=> Périmètre = ${P} u`;
-        return s;
-      }
-    }
-
-    // Une fonction pour choisir la base 2D (pour les solides)
-    function choisirBase2D() {
-      let choix;
-      while (true) {
-        choix = prompt("Choisissez la forme de la base 2D :\n" +
-                       "1. Carré\n" +
-                       "2. Rectangle\n" +
-                       "3. Cercle\n" +
-                       "4. Polygone régulier\n" +
-                       "5. Trapèze isocèle\n" +
-                       "6. Losange\n" +
-                       "Votre choix :");
-        switch (parseInt(choix,10)) {
-          case 1: return new Carre();
-          case 2: return new Rectangle();
-          case 3: return new Cercle();
-          case 4: return new PolygoneRegulier();
-          case 5: return new TrapezeIsocele();
-          case 6: return new Losange();
-          default:
-            alert("Choix invalide, réessayez.");
-        }
-      }
-    }
-
-    // -------------------------------
-    // CLASSES POUR LES SOLIDES 3D
-    // -------------------------------
-    class Shape3D {
-      saisirDonnees() { throw new Error("Not implemented"); }
-      calculerAireLaterale() { throw new Error("Not implemented"); }
-      calculerAireTotale() { throw new Error("Not implemented"); }
-      calculerVolume() { throw new Error("Not implemented"); }
-      afficherFormulesEtResultats() { throw new Error("Not implemented"); }
-    }
-
-    class Prisme extends Shape3D {
-      constructor() {
-        super();
-        this.base = null;
-        this.hauteur = 0;
-      }
-      saisirDonnees() {
-        alert("=== PRISME DROIT ===");
-        this.base = choisirBase2D();
-        this.base.saisirDonnees();
-        alert(this.base.afficherFormulesEtResultat());
-        this.hauteur = parseFloat(prompt("Entrez la hauteur du prisme :"));
-      }
-      calculerAireLaterale() { return this.base.getPerimetre() * this.hauteur; }
-      calculerAireTotale() { return this.calculerAireLaterale() + 2.0 * this.base.getAire(); }
-      calculerVolume() { return this.base.getAire() * this.hauteur; }
-      afficherFormulesEtResultats() {
-        let A_base = this.base.getAire(), P_base = this.base.getPerimetre();
-        let Al = this.calculerAireLaterale(), At = this.calculerAireTotale(), V = this.calculerVolume();
-        let s = "--- RESULTATS PRISME ---\n";
-        s += "Formules:\n";
-        s += " - Aire latérale = P_base * hauteur\n";
-        s += " - Aire totale = Aire latérale + 2 * Aire_base\n";
-        s += " - Volume = Aire_base * hauteur\n";
-        s += `Aire_base = ${A_base} u²\nPerimetre_base = ${P_base} u\nHauteur = ${this.hauteur} u\n`;
-        s += `=> Aire latérale = ${Al} u²\n=> Aire totale = ${At} u²\n=> Volume = ${V} u³`;
-        alert(s);
-      }
-    }
-
-    class Cube extends Shape3D {
-      constructor() {
-        super();
-        this.cote = 0;
-      }
-      saisirDonnees() {
-        alert("=== CUBE ===");
-        this.cote = parseFloat(prompt("Entrez la longueur de l'arête :"));
-      }
-      calculerAireLaterale() { return 4.0 * this.cote * this.cote; }
-      calculerAireTotale() { return 6.0 * this.cote * this.cote; }
-      calculerVolume() { return Math.pow(this.cote, 3); }
-      afficherFormulesEtResultats() {
-        let Al = this.calculerAireLaterale(), At = this.calculerAireTotale(), V = this.calculerVolume();
-        let s = "--- RESULTATS CUBE ---\n";
-        s += "Formules:\n";
-        s += " - Aire latérale = 4*c²\n";
-        s += " - Aire totale = 6*c²\n";
-        s += " - Volume = c³\n";
-        s += `c = ${this.cote} u\n`;
-        s += `=> Aire latérale = ${Al} u²\n=> Aire totale = ${At} u²\n=> Volume = ${V} u³`;
-        alert(s);
-      }
-    }
-
-    class ConePyramide extends Shape3D {
-      constructor() {
-        super();
-        this.base = null;
-        this.hauteur = 0;
-        this.generatrice = 0;
-        this.baseEstCercle = false;
-      }
-      saisirDonnees() {
-        alert("=== CONE / PYRAMIDE ===");
-        this.base = choisirBase2D();
-        this.base.saisirDonnees();
-        alert(this.base.afficherFormulesEtResultat());
-        // Vérifier si la base est un cercle
-        if (this.base instanceof Cercle) {
-          this.baseEstCercle = true;
-          alert("[INFO] Base circulaire => Cône");
-        } else {
-          this.baseEstCercle = false;
-          alert("[INFO] Base non circulaire => Pyramide");
-        }
-        this.hauteur = parseFloat(prompt("Entrez la hauteur :"));
-        // Calcul automatique de la génératrice
-        if (!this.baseEstCercle) {
-          if (this.base instanceof PolygoneRegulier) {
-            let aBase = this.base.getApotheme();
-            this.generatrice = Math.sqrt(this.hauteur*this.hauteur + aBase*aBase);
-            alert("[INFO] Génératrice calculée automatiquement à partir de l'apothème du polygone régulier.");
-          } else if (this.base instanceof Carre) {
-            let cote = this.base.cote;
-            let aBase = cote / 2.0;
-            this.generatrice = Math.sqrt(this.hauteur*this.hauteur + aBase*aBase);
-            alert("[INFO] Génératrice calculée automatiquement pour la base carré.");
-          } else if (this.base instanceof Rectangle) {
-            let l = this.base.longueur, L = this.base.largeur;
-            let aBase = Math.min(l, L) / 2.0;
-            this.generatrice = Math.sqrt(this.hauteur*this.hauteur + aBase*aBase);
-            alert("[INFO] Génératrice calculée automatiquement pour la base rectangle.");
-          } else {
-            this.generatrice = parseFloat(prompt("[INFO] Génératrice inconnue, entrez-la :"));
-          }
-        } else {
-          let r = this.base.rayon;
-          this.generatrice = Math.sqrt(r*r + this.hauteur*this.hauteur);
-          alert("[INFO] Génératrice calculée : g = " + this.generatrice);
-        }
-      }
-      calculerAireLaterale() {
-        if (this.baseEstCercle) {
-          // Cône
-          let r = this.base.rayon;
-          return Math.PI * r * this.generatrice;
-        } else {
-          // Pyramide
-          return (this.base.getPerimetre() * this.generatrice) / 2.0;
-        }
-      }
-      calculerAireTotale() { return this.calculerAireLaterale() + this.base.getAire(); }
-      calculerVolume() { return (1.0/3.0) * this.base.getAire() * this.hauteur; }
-      afficherFormulesEtResultats() {
-        let A_base = this.base.getAire(), P_base = this.base.getPerimetre();
-        let Al = this.calculerAireLaterale(), At = this.calculerAireTotale(), V = this.calculerVolume();
-        let s = "";
-        if (this.baseEstCercle) {
-          s += "--- RESULTATS CONE ---\n";
-          s += "Formules:\n";
-          s += " - Aire base = π*r²\n";
-          s += " - Génératrice = √(r²+h²)\n";
-          s += " - Aire latérale = π*r*g\n";
-          s += " - Aire totale = Aire latérale + π*r²\n";
-          s += " - Volume = (1/3)*π*r²*h\n";
-          s += `r = ${this.base.rayon} u\nh = ${this.hauteur} u\ng = ${this.generatrice} u\n`;
-          s += `=> Aire base = ${A_base} u²\n=> Aire latérale = ${Al} u²\n=> Aire totale = ${At} u²\n=> Volume = ${V} u³`;
-        } else {
-          s += "--- RESULTATS PYRAMIDE ---\n";
-          s += "Formules:\n";
-          s += " - Aire latérale = (P_base * g)/2\n";
-          s += " - Aire totale = Aire latérale + Aire base\n";
-          s += " - Volume = (1/3)*Aire base * h\n";
-          s += `Aire base = ${A_base} u²\nP_base = ${P_base} u\nh = ${this.hauteur} u\ng = ${this.generatrice} u\n`;
-          s += `=> Aire latérale = ${Al} u²\n=> Aire totale = ${At} u²\n=> Volume = ${V} u³`;
-        }
-        alert(s);
-      }
-    }
-
-    class Sphere extends Shape3D {
-      constructor() {
-        super();
-        this.rayon = 0;
-      }
-      saisirDonnees() {
-        alert("=== SPHÈRE ===");
-        this.rayon = parseFloat(prompt("Entrez le rayon de la sphère :"));
-      }
-      calculerAireLaterale() { return 4.0 * Math.PI * this.rayon * this.rayon; }
-      calculerAireTotale() { return this.calculerAireLaterale(); }
-      calculerVolume() { return (4.0/3.0) * Math.PI * Math.pow(this.rayon,3); }
-      afficherFormulesEtResultats() {
-        let A = this.calculerAireTotale(), V = this.calculerVolume();
-        let s = "--- RESULTATS SPHÈRE ---\n";
-        s += "Formules:\n";
-        s += " - Aire = 4*π*r²\n";
-        s += " - Volume = (4/3)*π*r³\n";
-        s += `r = ${this.rayon} u\n`;
-        s += `=> Aire = ${A} u²\n=> Volume = ${V} u³`;
-        alert(s);
-      }
-    }
-
-    class Cylindre extends Shape3D {
-      constructor() {
-        super();
-        this.rayon = 0;
-        this.hauteur = 0;
-      }
-      saisirDonnees() {
-        alert("=== CYLINDRE ===");
-        this.rayon = parseFloat(prompt("Entrez le rayon de la base :"));
-        this.hauteur = parseFloat(prompt("Entrez la hauteur :"));
-      }
-      calculerAireLaterale() { return 2.0 * Math.PI * this.rayon * this.hauteur; }
-      calculerAireTotale() { return this.calculerAireLaterale() + 2.0 * Math.PI * this.rayon * this.rayon; }
-      calculerVolume() { return Math.PI * this.rayon * this.rayon * this.hauteur; }
-      afficherFormulesEtResultats() {
-        let Al = this.calculerAireLaterale(), At = this.calculerAireTotale(), V = this.calculerVolume();
-        let s = "--- RESULTATS CYLINDRE ---\n";
-        s += "Formules:\n";
-        s += " - Aire latérale = 2*π*r*h\n";
-        s += " - Aire totale = Aire latérale + 2*π*r²\n";
-        s += " - Volume = π*r²*h\n";
-        s += `r = ${this.rayon} u\nh = ${this.hauteur} u\n`;
-        s += `=> Aire latérale = ${Al} u²\n=> Aire totale = ${At} u²\n=> Volume = ${V} u³`;
-        alert(s);
-      }
-    }
-
-    // -------------------------------
-    // MENUS POUR "MESURES À PARTIR D'UNE AIRE"
-    // -------------------------------
-    function menuMesuresParAire() {
-      let continuer = true;
-      while (continuer) {
-        let aire = parseFloat(prompt("Programme pour trouver des mesures de solides 3D à partir d'une aire spécifique.\n\nEntrez une valeur d'aire (u²) :"));
-        if (aire <= 0 || isNaN(aire)) {
-          alert("Veuillez entrer une valeur positive.");
-          continue;
-        }
-        let mode = parseInt(prompt(`Pour une aire de ${aire} u², choisissez le mode :\n1. Génération automatique (par boucle)\n2. Saisie manuelle\nVotre choix :`),10);
-        if (mode === 1) {
-          // MODE 1 : AUTOMATIQUE
-          let sortie = "";
-          sortie += "\n--- CÔNE POSSIBLE ---\n";
-          for (let i = 1.0; i <= Math.sqrt(aire); i += 0.01) {
-            let rayon = i;
-            let g = (aire - (Math.PI * rayon * rayon)) / (Math.PI * rayon);
-            let h = Math.sqrt(g*g - rayon*rayon);
-            if (g > 0 && validThousandths(g) &&
-                (rayon/g > 0.30) && (g/rayon > 0.30) &&
-                (h/rayon > 0.30) && (h/g > 0.40)) {
-              sortie += `Cône -- Rayon: ${rayon.toFixed(1)}   Hauteur: ${h.toFixed(2)}   Génératrice: ${g.toFixed(3)}   aire: ${aire.toFixed(2)} u²\n`;
-            }
-          }
-          sortie += "\n--- SPHÈRE ---\n";
-          let sphere_rayon = Math.sqrt(aire / (4.0 * Math.PI));
-          sortie += `Rayon de la sphère: ${sphere_rayon.toFixed(4)}\n`;
-
-          sortie += "\n--- CYLINDRE POSSIBLE ---\n";
-          for (let i = 1.0; i <= Math.sqrt(aire); i += 0.1) {
-            let rayon = i;
-            let h = (aire - (2.0 * Math.PI * rayon * rayon)) / (2.0 * Math.PI * rayon);
-            if (h > 0 && validThousandths(h))
-              sortie += `Cylindre -- Rayon: ${rayon.toFixed(1)}   Hauteur: ${h.toFixed(3)}   aire: ${aire.toFixed(2)} u²\n`;
-          }
-
-          sortie += "\n--- CUBE ---\n";
-          let cube_edge = Math.sqrt(aire / 6.0);
-          sortie += `Arête du cube: ${cube_edge.toFixed(4)}\n`;
-
-          sortie += "\n--- PRISME À BASE CARRÉE ---\n";
-          for (let a = 1.0; a <= Math.sqrt(aire/2.0); a += 0.01) {
-            let h = (aire - 2.0 * a * a) / (4.0 * a);
-            if (h > 0 && validThousandths(h) && (a/h > 0.3) && (h/a > 0.3)) {
-              let ap_base = a / 2.0;
-              let gen = Math.sqrt(h * h + ap_base * ap_base);
-              if (gen > 0 && validThousandths(gen)) {
-                sortie += `Prisme base carrée -- Arete base: ${a.toFixed(2)}   Hauteur: ${h.toFixed(2)}   Apotheme base: ${ap_base.toFixed(2)}   Génératrice: ${gen.toFixed(2)}   aire: ${aire.toFixed(2)} u²\n`;
-              }
-            }
-          }
-          // Pour simplifier, on affiche la sortie dans une alert
-          alert(sortie);
-        } else if (mode === 2) {
-          let choixSolide = parseInt(prompt("Choisissez le solide :\n1. Cône\n2. Sphère\n3. Cylindre\n4. Cube\n5. Prisme à base carrée\nVotre choix :"),10);
-          let continuerManuel = true;
-          while (continuerManuel) {
-            switch (choixSolide) {
-              case 1: {
-                let r = parseFloat(prompt("Cône manuel - Entrez le rayon du cône :"));
-                if (r <= 0 || isNaN(r)) {
-                  alert("Rayon invalide.");
-                } else {
-                  let g = (aire - Math.PI * r * r) / (Math.PI * r);
-                  if (g > 0 && validThousandths(g))
-                    alert(`Pour un cône de rayon ${r}, génératrice = ${g}`);
-                  else
-                    alert("Aucun résultat valide pour la génératrice avec ce rayon.");
-                }
-                break;
-              }
-              case 2: {
-                let r = parseFloat(prompt("Sphère manuel - Entrez le rayon de la sphère :"));
-                if (r <= 0 || isNaN(r)) alert("Rayon invalide.");
-                else {
-                  let sphereAire = 4 * Math.PI * r * r;
-                  alert(`Pour une sphère de rayon ${r}, aire calculée = ${sphereAire}`);
-                }
-                break;
-              }
-              case 3: {
-                let r = parseFloat(prompt("Cylindre manuel - Entrez le rayon du cylindre :"));
-                if (r <= 0 || isNaN(r)) alert("Rayon invalide.");
-                else {
-                  let h = (aire - (2.0 * Math.PI * r * r)) / (2.0 * Math.PI * r);
-                  if (h > 0 && validThousandths(h))
-                    alert(`Pour un cylindre de rayon ${r}, hauteur = ${h}`);
-                  else
-                    alert("Aucun résultat valide pour la hauteur avec ce rayon.");
-                }
-                break;
-              }
-              case 4: {
-                let a = parseFloat(prompt("Cube manuel - Entrez l'arête du cube :"));
-                if (a <= 0 || isNaN(a)) alert("Valeur invalide.");
-                else {
-                  let cubeAire = 6 * a * a;
-                  alert(`Pour un cube d'arête ${a}, aire calculée = ${cubeAire}`);
-                }
-                break;
-              }
-              case 5: {
-                let a = parseFloat(prompt("Prisme à base carrée manuel - Entrez l'arête de la base du prisme :"));
-                if (a <= 0 || isNaN(a)) alert("Valeur invalide.");
-                else {
-                  let h = (aire - 2.0 * a * a) / (4.0 * a);
-                  if (h > 0 && validThousandths(h))
-                    alert(`Pour un prisme à base carrée d'arête ${a}, hauteur = ${h}`);
-                  else
-                    alert("Aucun résultat valide pour la hauteur avec cette valeur.");
-                }
-                break;
-              }
-              default:
-                alert("Choix invalide.");
-            }
-            let rep = prompt("Voulez-vous entrer une autre valeur pour ce solide ? (o/n) :");
-            if (rep.toLowerCase() !== 'o') continuerManuel = false;
-          }
-        } else {
-          alert("Choix de mode invalide.");
-        }
-        let rep2 = prompt("Voulez-vous entrer une autre valeur d'aire ? (o/n) :");
-        if (rep2.toLowerCase() !== 'o') continuer = false;
-      }
-      alert("Retour au menu précédent.");
-    }
-
-    // -------------------------------
-    // MENU MESURES À PARTIR D'UN VOLUME
-    // -------------------------------
-    function menuMesuresParVolume() {
-      let continuer = true;
-      while (continuer) {
-        let volume = parseFloat(prompt("Programme pour trouver des mesures de solides 3D à partir d'un volume spécifique.\n\nEntrez une valeur de volume (u³) :"));
-        if (volume <= 0 || isNaN(volume)) {
-          alert("Veuillez entrer une valeur positive.");
-          continue;
-        }
-        let mode = parseInt(prompt(`Pour un volume de ${volume} u³, choisissez le mode :\n1. Génération automatique (par boucle)\n2. Saisie manuelle\nVotre choix :`),10);
-        if (mode === 1) {
-          let sortie = "";
-          sortie += "\n--- CÔNE POSSIBLE ---\n";
-          for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
-            let h = (3.0 * volume) / (Math.PI * r * r);
-            let g = Math.sqrt(r * r + h * h);
-            if (g > 0 && validThousandths(g))
-              sortie += `Cône -- Rayon: ${r.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Génératrice: ${g.toFixed(3)}   volume: ${volume.toFixed(2)} u³\n`;
-          }
-          sortie += "\n--- SPHÈRE ---\n";
-          let r = Math.cbrt((3.0 * volume) / (4.0 * Math.PI));
-          sortie += `Rayon de la sphère: ${r.toFixed(4)}\n`;
-          sortie += "\n--- CYLINDRE POSSIBLE ---\n";
-          for (let rr = 0.5; rr <= Math.cbrt(volume); rr += 0.1) {
-            let h = volume / (Math.PI * rr * rr);
-            if (h > 0 && validThousandths(h))
-              sortie += `Cylindre -- Rayon: ${rr.toFixed(1)}   Hauteur: ${h.toFixed(3)}   volume: ${volume.toFixed(2)} u³\n`;
-          }
-          sortie += "\n--- CUBE ---\n";
-          let a = Math.cbrt(volume);
-          sortie += `Arête du cube: ${a.toFixed(4)}\n`;
-          sortie += "\n--- PRISME À BASE CARRÉE ---\n";
-          for (let aa = 0.5; aa <= Math.cbrt(volume); aa += 0.1) {
-            let h = volume / (aa * aa);
-            if (h > 0 && validThousandths(h)) {
-              let ap_base = aa / 2.0;
-              let gen = Math.sqrt(h * h + ap_base * ap_base);
-              sortie += `Prisme base carrée -- Arete de base: ${aa.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Apotheme base: ${ap_base.toFixed(3)}   Génératrice: ${gen.toFixed(3)}   volume: ${volume.toFixed(2)} u³\n`;
-            }
-          }
-          sortie += "\n--- PYRAMIDE À BASE CARRÉE ---\n";
-          for (let c = 0.5; c <= Math.cbrt(volume * 3); c += 0.1) {
-            let h = (3.0 * volume) / (c * c);
-            if (h > 0 && validThousandths(h)) {
-              let ap_base = c / 2.0;
-              let gen = Math.sqrt(h * h + ap_base * ap_base);
-              sortie += `Pyramide carrée -- Arete de base: ${c.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Apotheme base: ${ap_base.toFixed(3)}   Génératrice: ${gen.toFixed(3)}   volume: ${volume.toFixed(2)} u³\n`;
-            }
-          }
-          alert(sortie);
-        } else if (mode === 2) {
-          let choixSolide = parseInt(prompt("Choisissez le solide :\n1. Cône\n2. Sphère\n3. Cylindre\n4. Cube\n5. Prisme à base carrée\nVotre choix :"),10);
-          let continuerManuel = true;
-          while (continuerManuel) {
-            switch (choixSolide) {
-              case 1: {
-                let r = parseFloat(prompt("Cône manuel - Entrez le rayon du cône :"));
-                if (r <= 0 || isNaN(r)) alert("Rayon invalide.");
-                else {
-                  let h = (3.0 * volume) / (Math.PI * r * r);
-                  let g = Math.sqrt(r * r + h * h);
-                  if (g > 0 && validThousandths(g))
-                    alert(`Pour un cône de rayon ${r}, hauteur = ${h}, génératrice = ${g}`);
-                  else
-                    alert("Aucun résultat valide pour ce rayon.");
-                }
-                break;
-              }
-              case 2: {
-                let r = parseFloat(prompt("Sphère manuel - Entrez le rayon de la sphère :"));
-                if (r <= 0 || isNaN(r)) alert("Rayon invalide.");
-                else {
-                  let vol_calc = (4.0/3.0)*Math.PI*r*r*r;
-                  alert(`Pour une sphère de rayon ${r}, volume calculé = ${vol_calc}`);
-                }
-                break;
-              }
-              case 3: {
-                let r = parseFloat(prompt("Cylindre manuel - Entrez le rayon du cylindre :"));
-                if (r <= 0 || isNaN(r)) alert("Rayon invalide.");
-                else {
-                  let h = volume / (Math.PI * r * r);
-                  if (h > 0 && validThousandths(h))
-                    alert(`Pour un cylindre de rayon ${r}, hauteur = ${h}`);
-                  else
-                    alert("Aucun résultat valide pour ce rayon.");
-                }
-                break;
-              }
-              case 4: {
-                let a = parseFloat(prompt("Cube manuel - Entrez l'arête du cube :"));
-                if (a <= 0 || isNaN(a)) alert("Valeur invalide.");
-                else {
-                  let vol_calc = Math.pow(a,3);
-                  alert(`Pour un cube d'arête ${a}, volume calculé = ${vol_calc}`);
-                }
-                break;
-              }
-              case 5: {
-                let a = parseFloat(prompt("Prisme à base carrée manuel - Entrez l'arête de la base du prisme :"));
-                if (a <= 0 || isNaN(a)) alert("Valeur invalide.");
-                else {
-                  let h = volume / (a * a);
-                  if (h > 0 && validThousandths(h))
-                    alert(`Pour un prisme à base carrée d'arête ${a}, hauteur = ${h}`);
-                  else
-                    alert("Aucun résultat valide pour la hauteur avec cette valeur.");
-                }
-                break;
-              }
-              default:
-                alert("Choix invalide.");
-            }
-            let rep = prompt("Voulez-vous entrer une autre valeur pour ce solide ? (o/n) :");
-            if (rep.toLowerCase() !== 'o') continuerManuel = false;
-          }
-        } else {
-          alert("Choix de mode invalide.");
-        }
-        let rep2 = prompt("Voulez-vous entrer une autre valeur de volume ? (o/n) :");
-        if (rep2.toLowerCase() !== 'o') continuer = false;
-      }
-      alert("Retour au menu précédent.");
-    }
-
-    // -------------------------------
-    // MENU SOLIDES 3D
-    // -------------------------------
-    function menu3D() {
-      let continuer3D = true;
-      while (continuer3D) {
-        let choix3D = parseInt(prompt("======== MENU SOLIDES 3D ========\n" +
-          "1. Prisme (base 2D au choix)\n" +
-          "2. Cube\n" +
-          "3. Cone/Pyramide (base 2D au choix)\n" +
-          "4. Sphère\n" +
-          "5. Cylindre\n" +
-          "6. Retour au menu principal\n" +
-          "Votre choix [1-6] :"),10);
-        if (choix3D === 6) {
-          continuer3D = false;
-        } else {
-          let solide = null;
-          switch (choix3D) {
-            case 1: solide = new Prisme(); break;
-            case 2: solide = new Cube(); break;
-            case 3: solide = new ConePyramide(); break;
-            case 4: solide = new Sphere(); break;
-            case 5: solide = new Cylindre(); break;
-            default:
-              alert("Choix invalide. Réessayez.");
-              continue;
-          }
-          solide.saisirDonnees();
-          solide.afficherFormulesEtResultats();
-        }
-      }
-    }
-
-    // -------------------------------
-    // MENU PRINCIPAL
-    // -------------------------------
-    function mainMenu() {
-      let programmeActif = true;
-      while (programmeActif) {
-        let choixPrincipal = parseInt(prompt(
-          "=========================================\n" +
-          "   CALCUL D'AIRE, VOLUME ET MESURES\n" +
-          "=========================================\n" +
-          "1. Formes 2D (aire & périmètre)\n" +
-          "2. Solides 3D\n" +
-          "3. Mesures à partir d'une aire spécifique\n" +
-          "4. Mesures à partir d'un volume spécifique\n" +
-          "5. Quitter\n" +
-          "-----------------------------------------\n" +
-          "Votre choix :"),10);
-        switch (choixPrincipal) {
-          case 1:
-            alert("--- MENU FORMES 2D ---\nFonctionnalité 2D non implémentée dans cet exemple.");
-            break;
-          case 2:
-            menu3D();
-            break;
-          case 3:
-            menuMesuresParAire();
-            break;
-          case 4:
-            menuMesuresParVolume();
-            break;
-          case 5:
-            programmeActif = false;
-            alert("Au revoir!");
-            break;
-          default:
-            alert("Choix invalide. Réessayez.");
-        }
-      }
-    }
-
-    // Lancement du programme
-    mainMenu();
   </script>
 </body>
 </html>
