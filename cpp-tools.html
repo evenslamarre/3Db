@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3Db - C++ Program Features</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fafafa;
+      margin: 0; padding: 0;
+    }
+    header {
+      background: #333; color: #fff;
+      padding: 1em; text-align: center;
+      font-size: 1.2em; position: relative;
+    }
+    header a {
+      position: absolute; right: 1em; top: 1em;
+      color: #fff; text-decoration: underline;
+    }
+    main {
+      max-width: 600px; margin: 1em auto; padding: 1em;
+      background: #fff; border-radius: 6px;
+    }
+    h2 { margin-top: 0; }
+    label { font-weight: bold; margin-top: 1em; display: block; }
+    input[type="number"] {
+      width: 100%; padding: 0.5em; box-sizing: border-box;
+    }
+    select { padding: 0.5em; width: 100%; }
+    button {
+      margin-top: 1em; padding: 0.7em 1.2em;
+      background: #0066cc; color: #fff; border: none;
+      border-radius: 4px; cursor: pointer; font-size: 1em;
+    }
+    button:hover {
+      background: #004999;
+    }
+    .result {
+      background: #e8f4ff; margin-top: 1em; padding: 0.8em;
+      border-left: 3px solid #0066cc; font-family: monospace;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  C++ Program Features in JS
+  <a href="index.html">Back to Home</a>
+</header>
+
+<main>
+  <h2>Geometry Tools (Based on the C++ Program)</h2>
+  
+  <!-- 1) Menu to choose what the user wants to do -->
+  <label for="modeSelect">Choose a Mode:</label>
+  <select id="modeSelect">
+    <option value="">-- Select --</option>
+    <option value="2D">2D Shapes (Area & Perimeter)</option>
+    <option value="3D">3D Solids (Area & Volume)</option>
+    <option value="measureByArea">Measures from a Specific Area</option>
+    <option value="measureByVolume">Measures from a Specific Volume</option>
+  </select>
+
+  <!-- 2) Container where forms appear dynamically -->
+  <div id="formContainer"></div>
+
+  <!-- 3) Result display -->
+  <div id="resultBox" class="result" style="display:none;"></div>
+</main>
+
+<script>
+/* 
+  Simplified JavaScript “translation” or re-implementation
+  of some of your C++ logic. This is just an example skeleton:
+  - Switch UI based on user’s mode selection.
+  - Compute using the same formulas.
+  - Show results in a <div>.
+*/
+
+const modeSelect = document.getElementById('modeSelect');
+const formContainer = document.getElementById('formContainer');
+const resultBox = document.getElementById('resultBox');
+
+// Listen for user selection
+modeSelect.addEventListener('change', () => {
+  const mode = modeSelect.value;
+  formContainer.innerHTML = '';
+  resultBox.style.display = 'none';
+
+  if (mode === '2D') {
+    show2DForm();
+  } else if (mode === '3D') {
+    show3DForm();
+  } else if (mode === 'measureByArea') {
+    showMeasureByAreaForm();
+  } else if (mode === 'measureByVolume') {
+    showMeasureByVolumeForm();
+  }
+});
+
+// ---- EXAMPLE FOR 2D SHAPES ----
+function show2DForm() {
+  formContainer.innerHTML = `
+    <h3>2D Shapes</h3>
+    <label for="shape2d">Choose Shape:</label>
+    <select id="shape2d">
+      <option value="">-- Select --</option>
+      <option value="square">Square (Carre)</option>
+      <option value="rectangle">Rectangle</option>
+      <option value="circle">Circle (Cercle)</option>
+      <!-- etc: polygone regulier, trapeze, losange ... -->
+    </select>
+
+    <div id="shape2dInputs"></div>
+    <button id="calc2dBtn">Compute 2D</button>
+  `;
+
+  const shape2dSelect = document.getElementById('shape2d');
+  const shape2dInputs = document.getElementById('shape2dInputs');
+  const calc2dBtn = document.getElementById('calc2dBtn');
+
+  shape2dSelect.addEventListener('change', () => {
+    const val = shape2dSelect.value;
+    shape2dInputs.innerHTML = '';
+    if (val === 'square') {
+      shape2dInputs.innerHTML = `
+        <label>Side (c):</label>
+        <input type="number" step="any" id="input_c" />
+      `;
+    } else if (val === 'rectangle') {
+      shape2dInputs.innerHTML = `
+        <label>Length (L):</label>
+        <input type="number" step="any" id="input_L" />
+        <label>Width (l):</label>
+        <input type="number" step="any" id="input_l" />
+      `;
+    } else if (val === 'circle') {
+      shape2dInputs.innerHTML = `
+        <label>Radius (r):</label>
+        <input type="number" step="any" id="input_r" />
+      `;
+    }
+    // add forms for trapeze, polygone regulier, etc. as needed
+  });
+
+  calc2dBtn.addEventListener('click', () => {
+    const val = shape2dSelect.value;
+    let msg = 'No shape selected.';
+    if (val === 'square') {
+      const c = parseFloat(document.getElementById('input_c').value);
+      const area = c * c;
+      const perimeter = 4 * c;
+      msg = `Square:\n  side c = ${c}\n  area = ${area}\n  perimeter = ${perimeter}`;
+    } else if (val === 'rectangle') {
+      const L = parseFloat(document.getElementById('input_L').value);
+      const l = parseFloat(document.getElementById('input_l').value);
+      const area = L * l;
+      const perimeter = 2 * (L + l);
+      msg = `Rectangle:\n  length=${L}, width=${l}\n  area=${area}\n  perimeter=${perimeter}`;
+    } else if (val === 'circle') {
+      const r = parseFloat(document.getElementById('input_r').value);
+      const area = Math.PI * r*r;
+      const perimeter = 2 * Math.PI * r;
+      msg = `Circle:\n  radius=${r}\n  area=${area}\n  circumference=${perimeter}`;
+    }
+    // else if trapeze, polygone, etc...
+    showResult(msg);
+  });
+}
+
+// ---- EXAMPLE FOR 3D SHAPES ----
+function show3DForm() {
+  formContainer.innerHTML = `
+    <h3>3D Solids</h3>
+    <label for="shape3d">Choose Solid:</label>
+    <select id="shape3d">
+      <option value="">-- Select --</option>
+      <option value="cube">Cube</option>
+      <option value="cylinder">Cylinder</option>
+      <option value="sphere">Sphere</option>
+      <option value="cone">Cone</option>
+      <option value="prism">Prism</option>
+      <!-- etc. -->
+    </select>
+
+    <div id="shape3dInputs"></div>
+    <button id="calc3dBtn">Compute 3D</button>
+  `;
+
+  const shape3dSelect = document.getElementById('shape3d');
+  const shape3dInputs = document.getElementById('shape3dInputs');
+  const calc3dBtn = document.getElementById('calc3dBtn');
+
+  shape3dSelect.addEventListener('change', () => {
+    shape3dInputs.innerHTML = '';
+    const val = shape3dSelect.value;
+    if (val === 'cube') {
+      shape3dInputs.innerHTML = `
+        <label>Edge (c):</label>
+        <input type="number" step="any" id="input_cube_c" />
+      `;
+    } else if (val === 'cylinder') {
+      shape3dInputs.innerHTML = `
+        <label>Radius (r):</label>
+        <input type="number" step="any" id="input_cyl_r" />
+        <label>Height (h):</label>
+        <input type="number" step="any" id="input_cyl_h" />
+      `;
+    } else if (val === 'sphere') {
+      shape3dInputs.innerHTML = `
+        <label>Radius (r):</label>
+        <input type="number" step="any" id="input_sphere_r" />
+      `;
+    } else if (val === 'cone') {
+      shape3dInputs.innerHTML = `
+        <label>Radius (r):</label>
+        <input type="number" step="any" id="input_cone_r" />
+        <label>Height (h):</label>
+        <input type="number" step="any" id="input_cone_h" />
+      `;
+    } else if (val === 'prism') {
+      shape3dInputs.innerHTML = `
+        <label>Base area (A<sub>base</sub>):</label>
+        <input type="number" step="any" id="input_prism_ab" />
+        <label>Height (h):</label>
+        <input type="number" step="any" id="input_prism_h" />
+      `;
+    }
+  });
+
+  calc3dBtn.addEventListener('click', () => {
+    const val = shape3dSelect.value;
+    let msg = 'No solid selected.';
+    if (val === 'cube') {
+      const c = parseFloat(document.getElementById('input_cube_c').value);
+      const areaLateral = 4 * c * c;
+      const areaTotal = 6 * c * c;
+      const volume = c * c * c;
+      msg = `Cube:\n  edge=${c}\n  lateral area=${areaLateral}\n  total area=${areaTotal}\n  volume=${volume}`;
+    } else if (val === 'cylinder') {
+      const r = parseFloat(document.getElementById('input_cyl_r').value);
+      const h = parseFloat(document.getElementById('input_cyl_h').value);
+      const areaLateral = 2 * Math.PI * r * h;
+      const areaTotal = areaLateral + 2 * Math.PI * r*r;
+      const volume = Math.PI * r*r * h;
+      msg = `Cylinder:\n  r=${r}, h=${h}\n  lateral area=${areaLateral}\n  total area=${areaTotal}\n  volume=${volume}`;
+    } else if (val === 'sphere') {
+      const r = parseFloat(document.getElementById('input_sphere_r').value);
+      const area = 4 * Math.PI * r*r;
+      const volume = (4/3)*Math.PI * r*r*r;
+      msg = `Sphere:\n  r=${r}\n  area=${area}\n  volume=${volume}`;
+    } else if (val === 'cone') {
+      const r = parseFloat(document.getElementById('input_cone_r').value);
+      const h = parseFloat(document.getElementById('input_cone_h').value);
+      const g = Math.sqrt(r*r + h*h);
+      const areaLateral = Math.PI * r * g;
+      const areaTotal = areaLateral + Math.PI * r*r;
+      const volume = (1/3)*Math.PI * r*r * h;
+      msg = `Cone:\n  r=${r}, h=${h}, g=${g.toFixed(2)}\n  lateral area=${areaLateral}\n  total area=${areaTotal}\n  volume=${volume}`;
+    } else if (val === 'prism') {
+      const Abase = parseFloat(document.getElementById('input_prism_ab').value);
+      const h = parseFloat(document.getElementById('input_prism_h').value);
+      // For a general prism: area lateral = P_base*h (we need perimeter?), but let's keep it simple:
+      const areaTotal = Abase*2; // ignoring lateral area because we don't have perimeter in a generic sense
+      const volume = Abase * h;
+      msg = `Prism:\n  base area=${Abase}, h=${h}\n  approx total area=${areaTotal}\n  volume=${volume}`;
+    }
+    showResult(msg);
+  });
+}
+
+// ---- EXAMPLE: Measures from Area (like your "menuMesuresParAire") ----
+function showMeasureByAreaForm() {
+  formContainer.innerHTML = `
+    <h3>Measures from a Specific Area</h3>
+    <label>Enter Desired Area (u^2):</label>
+    <input type="number" step="any" id="input_area" />
+
+    <label>Pick Solid Type to Investigate:</label>
+    <select id="solidAreaSelect">
+      <option value="cone">Cone</option>
+      <option value="sphere">Sphere</option>
+      <option value="cylinder">Cylinder</option>
+      <option value="cube">Cube</option>
+      <!-- etc. -->
+    </select>
+
+    <button id="findMeasuresBtn">Find Possible Dimensions</button>
+  `;
+
+  document.getElementById('findMeasuresBtn').addEventListener('click', () => {
+    const area = parseFloat(document.getElementById('input_area').value);
+    const solid = document.getElementById('solidAreaSelect').value;
+    let result = `For area = ${area}, searching possible ${solid} dimensions...\n\n(Example logic only)`;
+
+    // EXAMPLE: For a sphere, area = 4πr² => r = sqrt(area/(4π))
+    if (solid === 'sphere') {
+      const r = Math.sqrt(area / (4*Math.PI));
+      result += `\nSphere radius = ${r.toFixed(3)}`;
+    }
+    // For a cone: total area = π r g + π r² => we’d do a small “for-loop” scanning r, computing g, etc.
+    // For a cylinder, etc. This is just to illustrate the approach.
+
+    showResult(result);
+  });
+}
+
+// ---- EXAMPLE: Measures from Volume ----
+function showMeasureByVolumeForm() {
+  formContainer.innerHTML = `
+    <h3>Measures from a Specific Volume</h3>
+    <label>Enter Desired Volume (u^3):</label>
+    <input type="number" step="any" id="input_vol" />
+
+    <label>Pick Solid Type to Investigate:</label>
+    <select id="solidVolumeSelect">
+      <option value="cone">Cone</option>
+      <option value="sphere">Sphere</option>
+      <option value="cylinder">Cylinder</option>
+      <option value="cube">Cube</option>
+      <!-- etc. -->
+    </select>
+
+    <button id="findMeasuresVolBtn">Find Possible Dimensions</button>
+  `;
+
+  document.getElementById('findMeasuresVolBtn').addEventListener('click', () => {
+    const volume = parseFloat(document.getElementById('input_vol').value);
+    const solid = document.getElementById('solidVolumeSelect').value;
+    let result = `For volume = ${volume}, searching possible ${solid} solutions...\n\n(Example logic only)`;
+
+    // EXAMPLE: For a sphere, volume = (4/3)πr³ => r = cbrt( (3*vol)/(4π) )
+    if (solid === 'sphere') {
+      const r = Math.cbrt( (3*volume)/(4*Math.PI) );
+      result += `\nSphere radius = ${r.toFixed(3)}`;
+    }
+    // For a cone: volume = (1/3)*πr²h => we could do a for-loop scanning r, compute h, etc.
+    // etc...
+
+    showResult(result);
+  });
+}
+
+// ---- Helper to display the output
+function showResult(text) {
+  resultBox.innerText = text;
+  resultBox.style.display = 'block';
+}
+</script>
+
+</body>
+</html>

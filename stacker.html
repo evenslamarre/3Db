@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>3Db – Shape Stacker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #controls {
+      width: 320px;
+      padding: 10px;
+      background: #f0f0f0;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    #canvasContainer {
+      flex-grow: 1;
+      background: #ddd;
+      position: relative;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    input, select, button {
+      width: 100%;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    label { font-weight: bold; }
+    .shape-list { margin-top: 20px; }
+    .shape-item {
+      border-bottom: 1px solid #ccc;
+      padding: 5px 0;
+      font-size: 0.9em;
+      position: relative;
+    }
+    .shape-controls {
+      margin-top: 5px;
+    }
+    .shape-controls button {
+      font-size: 0.8em;
+      margin-right: 5px;
+    }
+    .delete-btn {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      color: red;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    hr { margin: 10px 0; }
+    header {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      background: #333;
+      color: #fff;
+      padding: 0.5em;
+      box-sizing: border-box;
+    }
+    header a {
+      color: #fff; text-decoration: underline;
+      margin-left: 1em;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Optional header with a link back to home -->
+  <header>
+    3Db Shape Stacker
+    <a href="index.html">Return to Home</a>
+  </header>
+
+  <div id="controls" style="margin-top:3em;">
+    <h2>Add Shape</h2>
+    <label for="shapeType">Shape Type:</label>
+    <select id="shapeType">
+      <option value="cone">Cone</option>
+      <option value="cylinder">Cylinder</option>
+      <option value="pyramid">Pyramid</option>
+      <option value="prism">Prism</option>
+      <option value="sphere">Sphere</option>
+    </select>
+    <div id="shapeParams">
+      <!-- Parameter inputs inserted dynamically -->
+    </div>
+    <button id="addShapeBtn">Add Shape</button>
+    <hr>
+    <div>
+      <label for="unit">Measurement Unit:</label>
+      <input type="text" id="unit" value="u">
+    </div>
+    <div class="shape-list" id="shapeList">
+      <h3>Stacked Shapes</h3>
+      <!-- List of shapes with parameters and controls -->
+    </div>
+  </div>
+
+  <div id="canvasContainer">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <!-- Your JavaScript here (unchanged + drawCone/drawCylinder) -->
+  <script src="stacker.js"></script>
+</body>
+</html>
