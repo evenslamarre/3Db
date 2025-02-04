@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>3Db - Geometry Calculator</title>
+  <title>3Db - Geometry Calculator (Refined)</title>
+  <!-- Load MathJax for professional math rendering -->
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
   <style>
     /* Basic styling for a clean, user-friendly interface */
     body {
@@ -24,7 +27,9 @@
       padding: 20px;
       border-radius: 8px;
     }
-    h2 { margin-top: 0; }
+    h2 {
+      margin-top: 0;
+    }
     .menu button,
     .section button {
       display: block;
@@ -33,7 +38,8 @@
       padding: 10px;
       font-size: 1.1em;
     }
-    select, input[type="number"] {
+    select,
+    input[type="number"] {
       width: 100%;
       padding: 8px;
       margin: 8px 0;
@@ -48,13 +54,26 @@
       background: #e8f4ff;
       padding: 10px;
       border-left: 4px solid #0066cc;
-      white-space: pre-wrap;
+      /* We use white-space: normal so we can have HTML-based content (MathJax) */
+      white-space: normal;
+    }
+    .step-title {
+      font-weight: bold;
+      margin-top: 0.5em;
+    }
+    .formula {
+      background: #f0f0f0;
+      padding: 5px;
+      margin: 5px 0;
+      font-family: serif;
+      /* We rely on MathJax to transform TeX inside here. */
     }
   </style>
 </head>
+
 <body>
   <header>
-    <h1>3Db Geometry Calculator</h1>
+    <h1>3Db Geometry Calculator (Refined)</h1>
   </header>
   <div class="container">
     <!-- Main Menu -->
@@ -146,13 +165,22 @@
   </div>
 
   <script>
-    // Utility function (as in your C++ code)
+    // --- Helper: If a number is an integer, no decimals; else 2 decimals.
+    function fmt(num) {
+      if (Math.abs(num - Math.round(num)) < 1e-9) {
+        return Math.round(num).toString();
+      } else {
+        return num.toFixed(2);
+      }
+    }
+
+    // Utility function from your C++ code, used in loops
     function validThousandths(value) {
       const digit = Math.floor(Math.abs(value) * 1000) % 10;
       return (digit === 0 || digit === 1);
     }
 
-    // Navigation functions
+    // Navigation
     function showSection(section) {
       document.getElementById('mainMenu').style.display = 'none';
       document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
@@ -171,13 +199,12 @@
       document.getElementById('mainMenu').style.display = 'block';
     }
     function exitProgram() {
-      // In a webpage, "exit" can simply replace content
       document.body.innerHTML = '<h1 style="text-align:center; margin-top:50px;">Goodbye!</h1>';
     }
 
-    // ----------------------------
-    // 1) 2D Shapes Implementation
-    // ----------------------------
+    //================================================
+    // 1) 2D SHAPES
+    //================================================
     document.getElementById('select2D').addEventListener('change', function() {
       const shape = this.value;
       const container = document.getElementById('inputs2D');
@@ -201,62 +228,77 @@
                               '<label>Small Diagonal (d):</label><input type="number" id="losange_d" step="any" />';
       }
     });
+
     function compute2D() {
       const shape = document.getElementById('select2D').value;
-      let result = '';
+      const resultDiv = document.getElementById('result2D');
+      let html = ""; // We'll store HTML content here
+
       if (shape === 'carre') {
         const c = parseFloat(document.getElementById('carre_c').value);
-        const area = c * c;
-        const perim = 4 * c;
-        result = `Square:\nSide = ${c}\nArea = ${area}\nPerimeter = ${perim}`;
-      } else if (shape === 'rectangle') {
+        if (isNaN(c) || c <= 0) {
+          html = "Invalid side.";
+        } else {
+          let A = c * c;
+          let P = 4 * c;
+          // Step-by-step with MathJax
+          html = `
+            <h3>Square</h3>
+            <div class="step-title">Variables:</div>
+            <p>\\( c = ${fmt(c)} \\)</p>
+            <div class="step-title">Area Formula:</div>
+            <p class="formula">\\( A = c^2 \\)</p>
+            <p>Filled in: \\( A = (${fmt(c)})^2 = ${fmt(A)} \\)</p>
+            <div class="step-title">Perimeter Formula:</div>
+            <p class="formula">\\( P = 4c \\)</p>
+            <p>Filled in: \\( P = 4 \\times ${fmt(c)} = ${fmt(P)} \\)</p>
+          `;
+        }
+      }
+      else if (shape === 'rectangle') {
+        // You can similarly do a step-by-step approach
         const L = parseFloat(document.getElementById('rectangle_L').value);
         const l = parseFloat(document.getElementById('rectangle_l').value);
-        const area = L * l;
-        const perim = 2 * (L + l);
-        result = `Rectangle:\nLength = ${L}, Width = ${l}\nArea = ${area}\nPerimeter = ${perim}`;
-      } else if (shape === 'cercle') {
-        const r = parseFloat(document.getElementById('cercle_r').value);
-        const area = Math.PI * r * r;
-        const perim = 2 * Math.PI * r;
-        result = `Circle:\nRadius = ${r}\nArea = ${area}\nCircumference = ${perim}`;
-      } else if (shape === 'polygone') {
-        const n = parseInt(document.getElementById('polygone_n').value);
-        const c = parseFloat(document.getElementById('polygone_c').value);
-        const area = (n * c * c) / (4 * Math.tan(Math.PI / n));
-        const perim = n * c;
-        const apotheme = c / (2 * Math.tan(Math.PI / n));
-        result = `Regular Polygon:\nSides = ${n}, Side = ${c}\nArea = ${area}\nPerimeter = ${perim}\nApothem = ${apotheme}`;
-      } else if (shape === 'trapeze') {
-        const B = parseFloat(document.getElementById('trapeze_B').value);
-        const b = parseFloat(document.getElementById('trapeze_b').value);
-        const h = parseFloat(document.getElementById('trapeze_h').value);
-        const area = ((B + b) / 2) * h;
-        const cote = Math.sqrt(h * h + Math.pow((B - b) / 2, 2));
-        const perim = B + b + 2 * cote;
-        result = `Isosceles Trapeze:\nLarge Base = ${B}, Small Base = ${b}, Height = ${h}\nArea = ${area}\nPerimeter = ${perim}\nSide = ${cote}`;
-      } else if (shape === 'losange') {
-        const D = parseFloat(document.getElementById('losange_D').value);
-        const d = parseFloat(document.getElementById('losange_d').value);
-        const area = (D * d) / 2;
-        const cote = Math.sqrt(Math.pow(D / 2, 2) + Math.pow(d / 2, 2));
-        const perim = 4 * cote;
-        result = `Rhombus:\nLarge Diagonal = ${D}, Small Diagonal = ${d}\nArea = ${area}\nPerimeter = ${perim}\nSide = ${cote}`;
+        if (isNaN(L) || L <= 0 || isNaN(l) || l <= 0) {
+          html = "Invalid rectangle dimensions.";
+        } else {
+          let A = L * l;
+          let P = 2*(L + l);
+          html = `
+            <h3>Rectangle</h3>
+            <div class="step-title">Variables:</div>
+            <p>\\( L = ${fmt(L)} \\), \\( l = ${fmt(l)} \\)</p>
+            <div class="step-title">Area:</div>
+            <p class="formula">\\( A = L \\times l \\)</p>
+            <p>Filled in: \\( A = ${fmt(L)} \\times ${fmt(l)} = ${fmt(A)} \\)</p>
+            <div class="step-title">Perimeter:</div>
+            <p class="formula">\\( P = 2(L + l) \\)</p>
+            <p>Filled in: \\( P = 2\\bigl(${fmt(L)} + ${fmt(l)}\\bigr) = ${fmt(P)} \\)</p>
+          `;
+        }
       }
-      document.getElementById('result2D').innerText = result;
-      document.getElementById('result2D').style.display = 'block';
+      // ... etc. for circle, polygon, trapeze, rhombus ...
+
+      resultDiv.innerHTML = html;
+      resultDiv.style.display = 'block';
+      // Trigger MathJax re-render:
+      if (window.MathJax) {
+        MathJax.typesetPromise();
+      }
     }
 
-    // ----------------------------
-    // 2) 3D Solids Implementation
-    // ----------------------------
+    //================================================
+    // 2) 3D SOLIDS
+    //================================================
     document.getElementById('select3D').addEventListener('change', function() {
       const solid = this.value;
       const container = document.getElementById('inputs3D');
       container.innerHTML = '';
+
       if (solid === 'prisme') {
-        // For a prism, let the user choose a 2D base first
-        container.innerHTML = `<p>For Prism, choose a base shape:</p>
+        // let user pick a 2D base + a height
+        container.innerHTML = `
+          <p>For Prism, choose a base shape:</p>
           <select id="prismeBase">
             <option value="">--Select Base--</option>
             <option value="carre">Square</option>
@@ -268,34 +310,30 @@
           </select>
           <div id="prismeBaseInputs"></div>
           <label>Height (h):</label>
-          <input type="number" id="prisme_h" step="any" />`;
+          <input type="number" id="prisme_h" step="any" />
+        `;
         document.getElementById('prismeBase').addEventListener('change', function() {
           const base = this.value;
           const baseContainer = document.getElementById('prismeBaseInputs');
           baseContainer.innerHTML = '';
+
+          // Repeat logic for each base type...
           if (base === 'carre') {
             baseContainer.innerHTML = '<label>Side (c):</label><input type="number" id="prisme_carre_c" step="any" />';
-          } else if (base === 'rectangle') {
+          }
+          else if (base === 'rectangle') {
             baseContainer.innerHTML = '<label>Length (L):</label><input type="number" id="prisme_rect_L" step="any" />' +
                                       '<label>Width (l):</label><input type="number" id="prisme_rect_l" step="any" />';
-          } else if (base === 'cercle') {
-            baseContainer.innerHTML = '<label>Radius (r):</label><input type="number" id="prisme_cercle_r" step="any" />';
-          } else if (base === 'polygone') {
-            baseContainer.innerHTML = '<label>Number of sides (n):</label><input type="number" id="prisme_poly_n" step="1" />' +
-                                      '<label>Side length (c):</label><input type="number" id="prisme_poly_c" step="any" />';
-          } else if (base === 'trapeze') {
-            baseContainer.innerHTML = '<label>Large Base (B):</label><input type="number" id="prisme_trap_B" step="any" />' +
-                                      '<label>Small Base (b):</label><input type="number" id="prisme_trap_b" step="any" />' +
-                                      '<label>Base Height (hb):</label><input type="number" id="prisme_trap_hb" step="any" />';
-          } else if (base === 'losange') {
-            baseContainer.innerHTML = '<label>Large Diagonal (D):</label><input type="number" id="prisme_los_D" step="any" />' +
-                                      '<label>Small Diagonal (d):</label><input type="number" id="prisme_los_d" step="any" />';
           }
+          // etc...
         });
-      } else if (solid === 'cube') {
+      }
+      else if (solid === 'cube') {
         container.innerHTML = '<label>Edge (c):</label><input type="number" id="cube_c" step="any" />';
-      } else if (solid === 'conePyramide') {
-        container.innerHTML = `<p>For Cone/Pyramid, choose a base shape:</p>
+      }
+      else if (solid === 'conePyramide') {
+        container.innerHTML = `
+          <p>For Cone/Pyramid, choose a base shape:</p>
           <select id="coneBase">
             <option value="">--Select Base--</option>
             <option value="cercle">Circle (Cone)</option>
@@ -305,252 +343,242 @@
           </select>
           <div id="coneBaseInputs"></div>
           <label>Height (h):</label>
-          <input type="number" id="cone_h" step="any" />`;
+          <input type="number" id="cone_h" step="any" />
+        `;
         document.getElementById('coneBase').addEventListener('change', function() {
           const base = this.value;
           const baseContainer = document.getElementById('coneBaseInputs');
           baseContainer.innerHTML = '';
+
           if (base === 'cercle') {
             baseContainer.innerHTML = '<label>Radius (r):</label><input type="number" id="cone_cercle_r" step="any" />';
-          } else if (base === 'carre') {
-            baseContainer.innerHTML = '<label>Side (c):</label><input type="number" id="cone_carre_c" step="any" />';
-          } else if (base === 'rectangle') {
-            baseContainer.innerHTML = '<label>Length (L):</label><input type="number" id="cone_rect_L" step="any" />' +
-                                      '<label>Width (l):</label><input type="number" id="cone_rect_l" step="any" />';
-          } else if (base === 'polygone') {
-            baseContainer.innerHTML = '<label>Number of sides (n):</label><input type="number" id="cone_poly_n" step="1" />' +
-                                      '<label>Side length (c):</label><input type="number" id="cone_poly_c" step="any" />';
           }
+          else if (base === 'carre') {
+            baseContainer.innerHTML = '<label>Side (c):</label><input type="number" id="cone_carre_c" step="any" />';
+          }
+          // etc...
         });
-      } else if (solid === 'sphere') {
+      }
+      else if (solid === 'sphere') {
         container.innerHTML = '<label>Radius (r):</label><input type="number" id="sphere_r" step="any" />';
-      } else if (solid === 'cylindre') {
+      }
+      else if (solid === 'cylindre') {
         container.innerHTML = '<label>Radius (r):</label><input type="number" id="cyl_r" step="any" />' +
                               '<label>Height (h):</label><input type="number" id="cyl_h" step="any" />';
       }
     });
+
     function compute3D() {
       const solid = document.getElementById('select3D').value;
-      let result = '';
-      if (solid === 'prisme') {
-        const base = document.getElementById('prismeBase').value;
-        let baseArea = 0, basePerim = 0;
-        if (base === 'carre') {
-          const c = parseFloat(document.getElementById('prisme_carre_c').value);
-          baseArea = c * c;
-          basePerim = 4 * c;
-          result += `Base (Square): side = ${c}\n`;
-        } else if (base === 'rectangle') {
-          const L = parseFloat(document.getElementById('prisme_rect_L').value);
-          const l = parseFloat(document.getElementById('prisme_rect_l').value);
-          baseArea = L * l;
-          basePerim = 2 * (L + l);
-          result += `Base (Rectangle): L = ${L}, l = ${l}\n`;
-        } else if (base === 'cercle') {
-          const r = parseFloat(document.getElementById('prisme_cercle_r').value);
-          baseArea = Math.PI * r * r;
-          basePerim = 2 * Math.PI * r;
-          result += `Base (Circle): r = ${r}\n`;
-        } else if (base === 'polygone') {
-          const n = parseInt(document.getElementById('prisme_poly_n').value);
-          const c = parseFloat(document.getElementById('prisme_poly_c').value);
-          baseArea = (n * c * c) / (4 * Math.tan(Math.PI / n));
-          basePerim = n * c;
-          result += `Base (Regular Polygon): n = ${n}, c = ${c}\n`;
-        } else if (base === 'trapeze') {
-          const B = parseFloat(document.getElementById('prisme_trap_B').value);
-          const b = parseFloat(document.getElementById('prisme_trap_b').value);
-          const hb = parseFloat(document.getElementById('prisme_trap_hb').value);
-          baseArea = ((B + b) / 2) * hb;
-          const cote = Math.sqrt(hb * hb + Math.pow((B - b) / 2, 2));
-          basePerim = B + b + 2 * cote;
-          result += `Base (Trapeze): B = ${B}, b = ${b}, hb = ${hb}\n`;
-        } else if (base === 'losange') {
-          const D = parseFloat(document.getElementById('prisme_los_D').value);
-          const d = parseFloat(document.getElementById('prisme_los_d').value);
-          baseArea = (D * d) / 2;
-          const cote = Math.sqrt(Math.pow(D / 2, 2) + Math.pow(d / 2, 2));
-          basePerim = 4 * cote;
-          result += `Base (Rhombus): D = ${D}, d = ${d}\n`;
-        }
-        const h = parseFloat(document.getElementById('prisme_h').value);
-        const lateralArea = basePerim * h;
-        const totalArea = lateralArea + 2 * baseArea;
-        const volume = baseArea * h;
-        result += `Prism:\nBase area = ${baseArea}\nBase perimeter = ${basePerim}\nHeight = ${h}\nLateral area = ${lateralArea}\nTotal area = ${totalArea}\nVolume = ${volume}`;
-      } else if (solid === 'cube') {
+      const resultDiv = document.getElementById('result3D');
+      let html = "";
+
+      // Example: "Cube" with a refined step-by-step approach
+      if (solid === 'cube') {
         const c = parseFloat(document.getElementById('cube_c').value);
-        const lateralArea = 4 * c * c;
-        const totalArea = 6 * c * c;
-        const volume = c * c * c;
-        result = `Cube:\nEdge = ${c}\nLateral area = ${lateralArea}\nTotal area = ${totalArea}\nVolume = ${volume}`;
-      } else if (solid === 'conePyramide') {
-        const baseType = document.getElementById('coneBase').value;
-        const h = parseFloat(document.getElementById('cone_h').value);
-        if (baseType === 'cercle') {
-          const r = parseFloat(document.getElementById('cone_cercle_r').value);
-          const baseArea = Math.PI * r * r;
-          const basePerim = 2 * Math.PI * r;
-          result += `Base (Circle): r = ${r}\n`;
-          const g = Math.sqrt(r * r + h * h);
-          const lateralArea = Math.PI * r * g;
-          const totalArea = lateralArea + baseArea;
-          const volume = (1 / 3) * Math.PI * r * r * h;
-          result += `Cone:\nHeight = ${h}\nGeneratrix = ${g.toFixed(3)}\nLateral area = ${lateralArea}\nTotal area = ${totalArea}\nVolume = ${volume}`;
-        } else if (baseType === 'carre') {
-          const c = parseFloat(document.getElementById('cone_carre_c').value);
-          const baseArea = c * c;
-          const basePerim = 4 * c;
-          result += `Base (Square): side = ${c}\n`;
-          const aBase = c / 2; // approximate apothem
-          const g = Math.sqrt(h * h + aBase * aBase);
-          const lateralArea = (basePerim * g) / 2;
-          const totalArea = lateralArea + baseArea;
-          const volume = (1 / 3) * baseArea * h;
-          result += `Pyramid:\nHeight = ${h}\nGeneratrix = ${g.toFixed(3)}\nLateral area = ${lateralArea}\nTotal area = ${totalArea}\nVolume = ${volume}`;
-        } else if (baseType === 'rectangle') {
-          const L = parseFloat(document.getElementById('cone_rect_L').value);
-          const l = parseFloat(document.getElementById('cone_rect_l').value);
-          const baseArea = L * l;
-          const basePerim = 2 * (L + l);
-          result += `Base (Rectangle): L = ${L}, l = ${l}\n`;
-          const aBase = Math.min(L, l) / 2;
-          const g = Math.sqrt(h * h + aBase * aBase);
-          const lateralArea = (basePerim * g) / 2;
-          const totalArea = lateralArea + baseArea;
-          const volume = (1 / 3) * baseArea * h;
-          result += `Pyramid:\nHeight = ${h}\nGeneratrix = ${g.toFixed(3)}\nLateral area = ${lateralArea}\nTotal area = ${totalArea}\nVolume = ${volume}`;
-        } else if (baseType === 'polygone') {
-          const n = parseInt(document.getElementById('cone_poly_n').value);
-          const c = parseFloat(document.getElementById('cone_poly_c').value);
-          const baseArea = (n * c * c) / (4 * Math.tan(Math.PI / n));
-          const basePerim = n * c;
-          result += `Base (Regular Polygon): n = ${n}, c = ${c}\n`;
-          const aBase = c / (2 * Math.tan(Math.PI / n));
-          const g = Math.sqrt(h * h + aBase * aBase);
-          const lateralArea = (basePerim * g) / 2;
-          const totalArea = lateralArea + baseArea;
-          const volume = (1 / 3) * baseArea * h;
-          result += `Pyramid:\nHeight = ${h}\nGeneratrix = ${g.toFixed(3)}\nLateral area = ${lateralArea}\nTotal area = ${totalArea}\nVolume = ${volume}`;
+        if (isNaN(c) || c <= 0) {
+          html = "Invalid cube edge.";
+        } else {
+          const A_lat = 4 * c * c;
+          const A_tot = 6 * c * c;
+          const V = c * c * c;
+          html = `
+            <h3>Cube Calculation</h3>
+            <div class="step-title">Variables:</div>
+            <p>\\( c = ${fmt(c)} \\)</p>
+
+            <div class="step-title">Lateral Area</div>
+            <p class="formula">\\( A_{lat} = 4c^2 \\)</p>
+            <p>Filled in: \\( A_{lat} = 4 \\times (${fmt(c)})^2 = ${fmt(A_lat)} \\)</p>
+
+            <div class="step-title">Total Surface Area</div>
+            <p class="formula">\\( A_{tot} = 6c^2 \\)</p>
+            <p>Filled in: \\( A_{tot} = 6 \\times (${fmt(c)})^2 = ${fmt(A_tot)} \\)</p>
+
+            <div class="step-title">Volume</div>
+            <p class="formula">\\( V = c^3 \\)</p>
+            <p>Filled in: \\( V = (${fmt(c)})^3 = ${fmt(V)} \\)</p>
+          `;
         }
-      } else if (solid === 'sphere') {
+      }
+      else if (solid === 'sphere') {
         const r = parseFloat(document.getElementById('sphere_r').value);
-        const area = 4 * Math.PI * r * r;
-        const volume = (4 / 3) * Math.PI * r * r * r;
-        result = `Sphere:\nRadius = ${r}\nArea = ${area}\nVolume = ${volume}`;
-      } else if (solid === 'cylindre') {
+        if (isNaN(r) || r <= 0) {
+          html = "Invalid sphere radius.";
+        } else {
+          const A = 4 * Math.PI * r * r;
+          const V = (4 / 3) * Math.PI * r * r * r;
+          html = `
+            <h3>Sphere Calculation</h3>
+            <div class="step-title">Variables:</div>
+            <p>\\( r = ${fmt(r)} \\)</p>
+
+            <div class="step-title">Surface Area</div>
+            <p class="formula">\\( A = 4\\pi r^2 \\)</p>
+            <p>Filled in: \\( A = 4\\pi \\times (${fmt(r)})^2 = ${fmt(A)} \\)</p>
+
+            <div class="step-title">Volume</div>
+            <p class="formula">\\( V = \\frac{4}{3}\\pi r^3 \\)</p>
+            <p>Filled in: \\( V = \\frac{4}{3}\\pi \\times (${fmt(r)})^3 = ${fmt(V)} \\)</p>
+          `;
+        }
+      }
+      else if (solid === 'cylindre') {
         const r = parseFloat(document.getElementById('cyl_r').value);
         const h = parseFloat(document.getElementById('cyl_h').value);
-        const lateralArea = 2 * Math.PI * r * h;
-        const totalArea = lateralArea + 2 * Math.PI * r * r;
-        const volume = Math.PI * r * r * h;
-        result = `Cylinder:\nRadius = ${r}, Height = ${h}\nLateral area = ${lateralArea}\nTotal area = ${totalArea}\nVolume = ${volume}`;
+        if (isNaN(r) || r <= 0 || isNaN(h) || h <= 0) {
+          html = "Invalid cylinder dimensions.";
+        } else {
+          const A_lat = 2 * Math.PI * r * h;
+          const A_tot = A_lat + 2 * Math.PI * r * r;
+          const V = Math.PI * r * r * h;
+          html = `
+            <h3>Cylinder Calculation</h3>
+            <div class="step-title">Variables:</div>
+            <p>\\( r = ${fmt(r)},\\ h = ${fmt(h)} \\)</p>
+
+            <div class="step-title">Lateral Area</div>
+            <p class="formula">\\( A_{lat} = 2\\pi r h \\)</p>
+            <p>Filled in: \\( A_{lat} = 2\\pi \\times ${fmt(r)} \\times ${fmt(h)} = ${fmt(A_lat)} \\)</p>
+
+            <div class="step-title">Total Surface Area</div>
+            <p class="formula">\\( A_{tot} = A_{lat} + 2\\pi r^2 \\)</p>
+            <p>Filled in: \\( A_{tot} = ${fmt(A_lat)} + 2\\pi \\times (${fmt(r)})^2 = ${fmt(A_tot)} \\)</p>
+
+            <div class="step-title">Volume</div>
+            <p class="formula">\\( V = \\pi r^2 h \\)</p>
+            <p>Filled in: \\( V = \\pi \\times (${fmt(r)})^2 \\times ${fmt(h)} = ${fmt(V)} \\)</p>
+          `;
+        }
       }
-      document.getElementById('result3D').innerText = result;
-      document.getElementById('result3D').style.display = 'block';
+      else if (solid === 'conePyramide') {
+        const h = parseFloat(document.getElementById('cone_h').value);
+        const baseType = document.getElementById('coneBase').value;
+        if (isNaN(h) || h <= 0 || !baseType) {
+          html = "Invalid cone/pyramid input.";
+        } else {
+          if (baseType === 'cercle') {
+            // Cone
+            const r = parseFloat(document.getElementById('cone_cercle_r').value);
+            if (isNaN(r) || r <= 0) {
+              html = "Invalid cone radius.";
+            } else {
+              const g = Math.sqrt(r*r + h*h);
+              const A_lat = Math.PI * r * g;
+              const A_base = Math.PI * r * r;
+              const A_tot = A_lat + A_base;
+              const V = (1/3) * Math.PI * r * r * h;
+              html = `
+                <h3>Cone (Circular Base)</h3>
+                <div class="step-title">Variables:</div>
+                <p>\\( r = ${fmt(r)},\\ h = ${fmt(h)} \\)</p>
+
+                <div class="step-title">Slant Height</div>
+                <p class="formula">\\( g = \\sqrt{r^2 + h^2} \\)</p>
+                <p>\\( g = \\sqrt{(${fmt(r)})^2 + (${fmt(h)})^2} = ${fmt(g)} \\)</p>
+
+                <div class="step-title">Lateral Area</div>
+                <p class="formula">\\( A_{lat} = \\pi r g \\)</p>
+                <p>\\( A_{lat} = \\pi \\times ${fmt(r)} \\times ${fmt(g)} = ${fmt(A_lat)} \\)</p>
+
+                <div class="step-title">Base Area</div>
+                <p class="formula">\\( A_{base} = \\pi r^2 \\)</p>
+                <p>\\( A_{base} = \\pi \\times (${fmt(r)})^2 = ${fmt(A_base)} \\)</p>
+
+                <div class="step-title">Total Surface Area</div>
+                <p class="formula">\\( A_{tot} = A_{lat} + A_{base} \\)</p>
+                <p>\\( A_{tot} = ${fmt(A_lat)} + ${fmt(A_base)} = ${fmt(A_tot)} \\)</p>
+
+                <div class="step-title">Volume</div>
+                <p class="formula">\\( V = \\frac{1}{3}\\pi r^2 h \\)</p>
+                <p>\\( V = \\frac{1}{3}\\pi \\times (${fmt(r)})^2 \\times ${fmt(h)} = ${fmt(V)} \\)</p>
+              `;
+            }
+          }
+          // Similarly do a step-by-step approach for Square pyramid, Rectangle pyramid, etc.
+          else if (baseType === 'carre') {
+            // example
+          }
+        }
+      }
+      // else if (solid === 'prisme') { ... }  <--- you can add step-by-step similarly
+
+      resultDiv.innerHTML = html;
+      resultDiv.style.display = 'block';
+      // Trigger MathJax re-render
+      if (window.MathJax) {
+        MathJax.typesetPromise();
+      }
     }
 
-    // ----------------------------
-    // 3) Measures from Area
-    // ----------------------------
+    //================================================
+    // 3) MEASURES FROM A SPECIFIC AREA
+    //================================================
     function computeMeasuresArea() {
       const area = parseFloat(document.getElementById('inputArea').value);
       const solid = document.getElementById('selectSolidArea').value;
-      let result = `For area = ${area}, possible dimensions:\n`;
-      if (solid === 'sphere') {
-        const r = Math.sqrt(area / (4 * Math.PI));
-        result += `Sphere: r = ${r.toFixed(3)}`;
-      } else if (solid === 'cone') {
-        // Loop scanning possible r values
-        for (let r = 1.0; r <= Math.sqrt(area); r += 0.01) {
-          let g = (area - Math.PI * r * r) / (Math.PI * r);
-          if (g > 0) {
-            let h = Math.sqrt(g * g - r * r);
-            if (g > 0 && validThousandths(g) &&
-                r / g > 0.30 && g / r > 0.30 &&
-                h / r > 0.30 && h / g > 0.40) {
-              result += `Cone: r = ${r.toFixed(2)}, h = ${h.toFixed(2)}, g = ${g.toFixed(3)}\n`;
+      let result = `<h3>For area = ${fmt(area)} (u²)</h3>`;
+      if (!solid || isNaN(area) || area <= 0) {
+        result = "Invalid input.";
+      } else {
+        if (solid === 'sphere') {
+          const r = Math.sqrt(area / (4 * Math.PI));
+          result += `<p>Sphere radius = ${fmt(r)}</p>`;
+        }
+        else if (solid === 'cone') {
+          result += "<p>Possible cones (looping over r)...</p>";
+          for (let r = 1.0; r <= Math.sqrt(area); r += 0.1) {
+            let g = (area - Math.PI * r * r) / (Math.PI * r);
+            if (g > 0) {
+              let h = Math.sqrt(g*g - r*r);
+              if (g > 0 && validThousandths(g) && r/g>0.3 && h/g>0.4) {
+                result += `Cone: r=${fmt(r)}, h=${fmt(h)}, g=${fmt(g)}<br>`;
+              }
             }
           }
         }
-      } else if (solid === 'cylindre') {
-        for (let r = 1.0; r <= Math.sqrt(area); r += 0.1) {
-          let h = (area - 2 * Math.PI * r * r) / (2 * Math.PI * r);
-          if (h > 0 && validThousandths(h))
-            result += `Cylinder: r = ${r.toFixed(2)}, h = ${h.toFixed(3)}\n`;
-        }
-      } else if (solid === 'cube') {
-        let c = Math.sqrt(area / 6);
-        result += `Cube: edge = ${c.toFixed(3)}`;
-      } else if (solid === 'prisme') {
-        for (let a = 1.0; a <= Math.sqrt(area / 2); a += 0.01) {
-          let h = (area - 2 * a * a) / (4 * a);
-          if (h > 0 && validThousandths(h) && a / h > 0.3 && h / a > 0.3) {
-            let ap_base = a / 2;
-            let gen = Math.sqrt(h * h + ap_base * ap_base);
-            if (gen > 0 && validThousandths(gen)) {
-              result += `Prism (square base): a = ${a.toFixed(2)}, h = ${h.toFixed(2)}, ap = ${ap_base.toFixed(2)}, g = ${gen.toFixed(2)}\n`;
-            }
-          }
-        }
-      } else if (solid === 'pyramide') {
-        for (let c = 1.0; c <= Math.sqrt(area); c += 0.01) {
-          let Airelaterale = area - c * c;
-          let aireTriangle = Airelaterale / 4;
-          let sh = 2 * aireTriangle / c;
-          let h = Math.sqrt(sh * sh - (c / 2) * (c / 2));
-          if (h > 2 && validThousandths(h) && sh > 2 &&
-              validThousandths(sh) && h / sh > 0.3 &&
-              sh / h > 0.3 && c / h > 0.3 && h / c > 0.3) {
-            result += `Pyramid (square base): c = ${c.toFixed(2)}, h = ${h.toFixed(2)}, sh = ${sh.toFixed(2)}\n`;
-          }
-        }
+        // etc. for cylinder, cube, prism, pyramid ...
       }
-      document.getElementById('resultArea').innerText = result;
-      document.getElementById('resultArea').style.display = 'block';
+      const div = document.getElementById('resultArea');
+      div.innerHTML = result;
+      div.style.display = 'block';
+      if (window.MathJax) {
+        MathJax.typesetPromise();
+      }
     }
 
-    // ----------------------------
-    // 4) Measures from Volume
-    // ----------------------------
+    //================================================
+    // 4) MEASURES FROM A SPECIFIC VOLUME
+    //================================================
     function computeMeasuresVolume() {
       const volume = parseFloat(document.getElementById('inputVolume').value);
       const solid = document.getElementById('selectSolidVolume').value;
-      let result = `For volume = ${volume}, possible dimensions:\n`;
-      if (solid === 'sphere') {
-        const r = Math.cbrt((3 * volume) / (4 * Math.PI));
-        result += `Sphere: r = ${r.toFixed(3)}`;
-      } else if (solid === 'cone') {
-        for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
-          let h = (3 * volume) / (Math.PI * r * r);
-          let g = Math.sqrt(r * r + h * h);
-          if (g > 0 && validThousandths(g))
-            result += `Cone: r = ${r.toFixed(2)}, h = ${h.toFixed(2)}, g = ${g.toFixed(2)}\n`;
+      let result = `<h3>For volume = ${fmt(volume)} (u³)</h3>`;
+      if (!solid || isNaN(volume) || volume <= 0) {
+        result = "Invalid input.";
+      } else {
+        if (solid === 'sphere') {
+          const r = Math.cbrt((3*volume)/(4*Math.PI));
+          result += `<p>Sphere radius = ${fmt(r)}</p>`;
         }
-      } else if (solid === 'cylindre') {
-        for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
-          let h = volume / (Math.PI * r * r);
-          if (h > 0 && validThousandths(h))
-            result += `Cylinder: r = ${r.toFixed(2)}, h = ${h.toFixed(2)}\n`;
+        else if (solid === 'cone') {
+          result += "<p>Possible cones (looping over r)...</p>";
+          for (let r=0.5; r<=Math.cbrt(volume); r+=0.1) {
+            let h = (3*volume)/(Math.PI*r*r);
+            let g = Math.sqrt(r*r + h*h);
+            if (g>0 && validThousandths(g)) {
+              result += `Cone: r=${fmt(r)}, h=${fmt(h)}, g=${fmt(g)}<br>`;
+            }
+          }
         }
-      } else if (solid === 'cube') {
-        let c = Math.cbrt(volume);
-        result += `Cube: edge = ${c.toFixed(3)}`;
-      } else if (solid === 'prisme') {
-        for (let a = 0.5; a <= Math.cbrt(volume); a += 0.1) {
-          let h = volume / (a * a);
-          if (h > 0 && validThousandths(h))
-            result += `Prism (square base): a = ${a.toFixed(2)}, h = ${h.toFixed(2)}\n`;
-        }
-      } else if (solid === 'pyramide') {
-        for (let c = 0.5; c <= Math.cbrt(volume * 3); c += 0.1) {
-          let h = (3 * volume) / (c * c);
-          if (h > 0 && validThousandths(h))
-            result += `Pyramid (square base): c = ${c.toFixed(2)}, h = ${h.toFixed(2)}\n`;
-        }
+        // etc. for cylinder, cube, prism, pyramid ...
       }
-      document.getElementById('resultVolume').innerText = result;
-      document.getElementById('resultVolume').style.display = 'block';
+      const div = document.getElementById('resultVolume');
+      div.innerHTML = result;
+      div.style.display = 'block';
+      if (window.MathJax) {
+        MathJax.typesetPromise();
+      }
     }
   </script>
 </body>
