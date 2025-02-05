@@ -492,30 +492,50 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Dessiner une ligne de cote (avec seulement une lettre) ---
-  function dessinerLigneCote(ctx, origine, scale, pt1, pt2, etiquette) {
-    const p1 = projeter(pt1.x, pt1.y, pt1.z);
-    const p2 = projeter(pt2.x, pt2.y, pt2.z);
-    const x1 = origine.x + p1.x * scale;
-    const y1 = origine.y + p1.y * scale;
-    const x2 = origine.x + p2.x * scale;
-    const y2 = origine.y + p2.y * scale;
-    ctx.save();
-    ctx.lineWidth = 2;
-    ctx.setLineDash([10,10]);
-    ctx.strokeStyle = 'blue';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = 'blue';
-    ctx.font = "12px sans-serif";
-    const midX = (x1 + x2) / 2;
-    const midY = (y1 + y2) / 2;
-    // On affiche uniquement l'étiquette (lettre)
-    ctx.fillText(etiquette, midX + 5, midY - 5);
-    ctx.restore();
-  }
+function dessinerLigneCote(ctx, origine, scale, pt1, pt2, etiquette) {
+  const p1 = projeter(pt1.x, pt1.y, pt1.z);
+  const p2 = projeter(pt2.x, pt2.y, pt2.z);
+  const x1 = origine.x + p1.x * scale;
+  const y1 = origine.y + p1.y * scale;
+  const x2 = origine.x + p2.x * scale;
+  const y2 = origine.y + p2.y * scale;
+  
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.setLineDash([10, 10]);
+  ctx.strokeStyle = 'blue';
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // Calculer le point médian de la ligne
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
+  
+  // Calculer le vecteur directeur de la ligne
+  const vx = x2 - x1;
+  const vy = y2 - y1;
+  const length = Math.sqrt(vx * vx + vy * vy);
+  
+  // Calculer le vecteur normal pour obtenir la direction gauche (perpendiculaire)
+  // Dans un repère canvas (où y croît vers le bas), le vecteur gauche est (-vy, vx)
+  const nx = -vy / length;
+  const ny = vx / length;
+  
+  // Appliquer un décalage (ici 5 pixels) dans la direction du vecteur normal
+  const offset = 15;
+  const labelX = midX + nx * offset;
+  const labelY = midY + ny * offset;
+  
+  // Afficher l'étiquette
+  ctx.fillStyle = 'blue';
+  ctx.font = "15px sans-serif";
+  ctx.fillText(etiquette, labelX, labelY);
+  
+  ctx.restore();
+}
 
   // --- Fonction utilitaire : calcul du point milieu (même y) ---
   function pointMilieu(pt1, pt2) {
@@ -784,6 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     ctx.closePath();
     ctx.stroke();
+    dessinerEllipseBasePointillee(r, yBas, origine, scale);
     // Dessiner l'ellipse de la base supérieure en trait solide
     const N = 100;
     ctx.beginPath();
@@ -799,7 +820,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     ctx.closePath();
     ctx.stroke();
-    // Lignes de cote : rayon ("c") et hauteur ("h")
+    // Lignes de cote : rayon ("") et hauteur ("h")
     dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: r, y: yBas, z: 0 }, "r");
     dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
   }
