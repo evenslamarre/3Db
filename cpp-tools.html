@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <title>Mesures de Solides 3D</title>
@@ -26,7 +26,7 @@
   <button onclick="showSection('volumeSection')">Mesures par Volume</button>
 </nav>
 
-<!-- Section for measurements from a given AREA -->
+<!-- Section pour les mesures basées sur une valeur d'aire -->
 <section id="aireSection" class="active">
   <h2>Mesures par Aire</h2>
   <div class="form-group">
@@ -37,37 +37,19 @@
   <pre id="aireOutput" class="output"></pre>
 </section>
 
-<!-- Section for measurements from a given VOLUME -->
+<!-- Section pour les mesures basées sur une valeur de volume -->
 <section id="volumeSection">
   <h2>Mesures par Volume</h2>
   <div class="form-group">
     <label for="volumeInput">Entrez une valeur de volume (u³):</label>
     <input type="number" id="volumeInput" placeholder="Ex. 125" step="0.01">
   </div>
-  <div class="form-group">
-    <label>Choisissez le mode:</label>
-    <select id="modeVolumeSelect">
-      <option value="auto">1. Génération automatique</option>
-      <option value="manuel">2. Saisie manuelle</option>
-    </select>
-  </div>
-  <!-- For manual mode, we show a second select -->
-  <div class="form-group" id="solideVolumeSelectDiv" style="display: none;">
-    <label for="solideVolumeSelect">Choisissez le solide:</label>
-    <select id="solideVolumeSelect">
-      <option value="cone">Cône</option>
-      <option value="sphere">Sphère</option>
-      <option value="cylindre">Cylindre</option>
-      <option value="cube">Cube</option>
-      <option value="prismeCarree">Prisme à base carrée</option>
-    </select>
-  </div>
   <button class="action" onclick="calculerMesuresVolume()">Calculer</button>
   <pre id="volumeOutput" class="output"></pre>
 </section>
 
 <script>
-  // --- Navigation between sections ---
+  // --- Navigation entre sections ---
   function showSection(sectionId) {
     document.querySelectorAll("section").forEach(sec => {
       sec.classList.remove("active");
@@ -75,59 +57,45 @@
     document.getElementById(sectionId).classList.add("active");
   }
 
-  // --- Show/hide extra select based on mode ---
-  document.getElementById("modeAireSelect").addEventListener("change", function() {
-    document.getElementById("solideAireSelectDiv").style.display =
-      (this.value === "manuel") ? "block" : "none";
-  });
-  document.getElementById("modeVolumeSelect").addEventListener("change", function() {
-    document.getElementById("solideVolumeSelectDiv").style.display =
-      (this.value === "manuel") ? "block" : "none";
-  });
-
-  // --- Helper functions ---
-  // validThousandths: returns true if the thousandths digit is 0 or 1.
+  // --- Fonctions utilitaires ---
+  // validThousandths: renvoie true si le chiffre des millièmes est 0 ou 1.
   function validThousandths(value) {
     const digit = Math.floor(Math.abs(value) * 1000) % 10;
     return (digit === 0 || digit === 1);
   }
 
-  // isValidDimensionsForCone: checks if the dimensions for a cone (radius r, height h, generatrix g)
-  // are within reasonable bounds. Adjust thresholds as needed.
+  // isValidDimensionsForCone: vérifie que les dimensions pour un cône (rayon r, hauteur h, génératrice g)
+  // sont raisonnables.
   function isValidDimensionsForCone(r, h, g) {
     if (r <= 0 || h <= 0 || g <= 0) return false;
     if (!validThousandths(h)) return false;
-    // Check that the height is not extremely small compared to the radius (and vice versa)
     if ((h / r) <= 0.30 || (r / h) <= 0.30) return false;
-    // Also, check similar ratios for h and g.
     if ((h / g) <= 0.30 || (g / h) <= 0.30) return false;
     return true;
   }
 
-  // tryConeDimensions: Given a total area (or volume in another context) and a candidate radius,
-  // compute g (and h) for a cone, then return the dimensions if they pass validation.
+  // Essayer de déterminer les dimensions d'un cône à partir d'une aire donnée et d'un rayon candidat
   function tryConeDimensions_Aire(aire, r) {
-    // For a cone, total area = π*r*g + π*r²
-    // Solve for generatrix: g = (aire - π*r²) / (π*r)
+    // Pour un cône, Aire totale = π*r*g + π*r²  =>  g = (aire - π*r²) / (π*r)
     const g = (aire - (Math.PI * r * r)) / (Math.PI * r);
     if (g <= 0) return null;
     const h = Math.sqrt(g * g - r * r);
     return isValidDimensionsForCone(r, h, g) ? { r, h, g } : null;
   }
 
+  // Essayer de déterminer les dimensions d'un cône à partir d'un volume donné et d'un rayon candidat
   function tryConeDimensions_Volume(volume, r) {
-    // For a cone, volume = (1/3)*π*r²*h  =>  h = 3*volume / (π*r²)
+    // Pour un cône, Volume = (1/3)*π*r²*h  =>  h = 3*volume / (π*r²)
     const h = (3 * volume) / (Math.PI * r * r);
     const g = Math.sqrt(r * r + h * h);
     return isValidDimensionsForCone(r, h, g) ? { r, h, g } : null;
   }
 
   // ------------------------------
-  // Calculations based on an AREA value
+  // Calculs basés sur une valeur d'aire
   // ------------------------------
   function calculerMesuresAire() {
     const aire = parseFloat(document.getElementById("aireInput").value);
-    const mode = document.getElementById("modeAireSelect").value;
     let output = "";
 
     if (isNaN(aire) || aire <= 0) {
@@ -136,137 +104,73 @@
       return;
     }
 
-    if (mode === "auto") {
-      output += "MODE AUTOMATIQUE\n\n";
-      // --- CONE ---
-      output += "--- CÔNE POSSIBLE ---\n";
-      for (let r = 1.0; r <= Math.sqrt(aire); r += 0.01) {
-        const dims = tryConeDimensions_Aire(aire, r);
-        if (dims) {
-          output += `Cône -- Rayon: ${dims.r.toFixed(1)}   Hauteur: ${dims.h.toFixed(2)}   Génératrice: ${dims.g.toFixed(3)}   Aire: ${aire.toFixed(2)} u²\n`;
-        }
+    output += "MODE AUTOMATIQUE\n\n";
+
+    // --- CÔNE ---
+    output += "--- CÔNE POSSIBLE ---\n";
+    for (let r = 1.0; r <= Math.sqrt(aire); r += 0.01) {
+      const dims = tryConeDimensions_Aire(aire, r);
+      if (dims) {
+        output += `Cône -- Rayon: ${dims.r.toFixed(1)}   Hauteur: ${dims.h.toFixed(2)}   Génératrice: ${dims.g.toFixed(3)}   Aire: ${aire.toFixed(2)} u²\n`;
       }
+    }
 
-      // --- SPHERE ---
-      output += "\n--- SPHÈRE ---\n";
-      // Aire = 4πr²  =>  r = sqrt(aire/(4π))
-      const sphere_r = Math.sqrt(aire / (4 * Math.PI));
-      output += `Rayon de la sphère: ${sphere_r.toFixed(4)}\n`;
+    // --- SPHÈRE ---
+    output += "\n--- SPHÈRE ---\n";
+    // Aire = 4πr²  =>  r = sqrt(aire/(4π))
+    const sphere_r = Math.sqrt(aire / (4 * Math.PI));
+    output += `Rayon de la sphère: ${sphere_r.toFixed(4)}\n`;
 
-      // --- CYLINDRE ---
-      output += "\n--- CYLINDRE POSSIBLE ---\n";
-      // Aire totale = 2πr² + 2πr*h  =>  h = (aire - 2πr²)/(2πr)
-      for (let r = 1.0; r <= Math.sqrt(aire); r += 0.1) {
-        const r_val = r;
-        const h = (aire - (2.0 * Math.PI * r_val * r_val)) / (2.0 * Math.PI * r_val);
-        if (h > 0 && validThousandths(h))
-          output += `Cylindre -- Rayon: ${r_val.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Aire: ${aire.toFixed(2)} u²\n`;
+    // --- CYLINDRE ---
+    output += "\n--- CYLINDRE POSSIBLE ---\n";
+    // Aire totale = 2πr² + 2πr*h  =>  h = (aire - 2πr²)/(2πr)
+    for (let r = 1.0; r <= Math.sqrt(aire); r += 0.1) {
+      const r_val = r;
+      const h = (aire - (2.0 * Math.PI * r_val * r_val)) / (2.0 * Math.PI * r_val);
+      if (h > 0 && validThousandths(h))
+        output += `Cylindre -- Rayon: ${r_val.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Aire: ${aire.toFixed(2)} u²\n`;
+    }
+
+    // --- CUBE ---
+    output += "\n--- CUBE ---\n";
+    // Aire totale d'un cube = 6*c² => c = sqrt(aire/6)
+    const cube_edge = Math.sqrt(aire / 6.0);
+    output += `Arête du cube: ${cube_edge.toFixed(4)}\n`;
+
+    // --- PRISME À BASE CARRÉE ---
+    output += "\n--- PRISME À BASE CARRÉE ---\n";
+    // Aire totale = 2*c² + 4*c*h  =>  h = (aire - 2*c²) / (4*c)
+    for (let c = 1.0; c <= Math.sqrt(aire / 2.0); c += 0.01) {
+      const aire_base = c * c;
+      const aire_laterale = aire - (2 * aire_base);
+      const h = aire_laterale / (4 * c);
+      if (h > 0 && validThousandths(h) && (h / c >= 0.30 && h / c <= 3.33)) {
+        output += `Prisme base carrée -- Arête base: ${c.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Aire totale: ${aire.toFixed(2)} u²\n`;
       }
+    }
 
-      // --- CUBE ---
-      output += "\n--- CUBE ---\n";
-      // Aire totale d'un cube = 6*c² => c = sqrt(aire/6)
-      const cube_edge = Math.sqrt(aire / 6.0);
-      output += `Arête du cube: ${cube_edge.toFixed(4)}\n`;
-
-      // --- PRISME À BASE CARRÉE ---
-      output += "\n--- PRISME À BASE CARRÉE ---\n";
-      // The formula: Aire totale = 2*c^2 + 4*c*h  =>  h = (aire - 2*c^2) / (4*c)
-// Loop c from 1.0 up to sqrt(aire/2)
-      for (let c = 1.0; c <= Math.sqrt(aire / 2.0); c += 0.01) {
-        const aire_base = c * c;
-        const aire_laterale = aire - (2 * aire_base);
-        // h = (aire - 2*c^2)/(4*c)
-        const h = aire_laterale / (4 * c);
-
-        // Check that h is positive, passes validThousandths, and that h/c is within [0.30, 3.33]
-        if (h > 0 && validThousandths(h) && (h / c >= 0.30 && h / c <= 3.33)) {
-          output += "Prisme base carrée -- Arête base: " + c.toFixed(2) +
-            "   Hauteur: " + h.toFixed(3) +
-            "     Aire totale: " + aire.toFixed(2) + " u^2\n";
-        }
-      }
-
-      // --- PYRAMIDE À BASE CARRÉE (exemple) ---
-      output += "\n--- PYRAMIDE À BASE CARRÉE ---\n";
-      for (let c = 1.0; c <= Math.sqrt(aire); c += 0.01) {
-        const A_laterale = aire - c * c;
-        const aireTriangle = A_laterale / 4.0;
-        const sh = 2 * aireTriangle / c;
-        const h = Math.sqrt(Math.pow(sh, 2) - Math.pow(c / 2.0, 2));
-        if (h > 2 && validThousandths(h) && sh > 2 &&
+    // --- PYRAMIDE À BASE CARRÉE ---
+    output += "\n--- PYRAMIDE À BASE CARRÉE ---\n";
+    for (let c = 1.0; c <= Math.sqrt(aire); c += 0.01) {
+      const A_laterale = aire - c * c;
+      const aireTriangle = A_laterale / 4.0;
+      const sh = 2 * aireTriangle / c;
+      const h = Math.sqrt(Math.pow(sh, 2) - Math.pow(c / 2.0, 2));
+      if (h > 2 && validThousandths(h) && sh > 2 &&
           validThousandths(sh) && (h / sh > 0.3) &&
           (sh / h > 0.3) && (c / h > 0.3) && (h / c > 0.3)) {
-          output += `Pyramide carrée -- Arête: ${c.toFixed(2)}   Hauteur: ${h.toFixed(2)}   Apotheme: ${sh.toFixed(2)}   Aire base: ${(c*c).toFixed(2)}   Aire laterale: ${A_laterale.toFixed(2)}   Aire totale: ${(A_laterale + c*c).toFixed(2)} u²\n`;
-        }
+        output += `Pyramide carrée -- Arête: ${c.toFixed(2)}   Hauteur: ${h.toFixed(2)}   Apotheme: ${sh.toFixed(2)}   Aire base: ${(c*c).toFixed(2)}   Aire laterale: ${A_laterale.toFixed(2)}   Aire totale: ${(A_laterale + c*c).toFixed(2)} u²\n`;
       }
-    } else if (mode === "manuel") {
-      output += "MODE MANUEL\n\n";
-      const solide = document.getElementById("solideAireSelect").value;
-      switch(solide) {
-        case "cone": {
-          const r = parseFloat(prompt("Entrez le rayon du cône:"));
-          if (isNaN(r) || r <= 0) { output += "Rayon invalide.\n"; }
-          else {
-            const g = (aire - Math.PI * r * r) / (Math.PI * r);
-            const h = Math.sqrt(g * g - r * r);
-            if (g > 0 && isValidDimensionsForCone(r, h, g))
-              output += `Pour un cône de rayon ${r}, Génératrice = ${g.toFixed(3)}\n`;
-            else output += "Aucun résultat valide pour la génératrice avec ce rayon.\n";
-          }
-        } break;
-        case "sphere": {
-          const r = parseFloat(prompt("Entrez le rayon de la sphère:"));
-          if (isNaN(r) || r <= 0) { output += "Rayon invalide.\n"; }
-          else {
-            const sphereAire = 4 * Math.PI * r * r;
-            output += `Pour une sphère de rayon ${r}, Aire calculée = ${sphereAire.toFixed(3)} u²\n`;
-          }
-        } break;
-        case "cylindre": {
-          const r = parseFloat(prompt("Entrez le rayon du cylindre:"));
-          if (isNaN(r) || r <= 0) { output += "Rayon invalide.\n"; }
-          else {
-            const h = (aire - 2 * Math.PI * r * r) / (2 * Math.PI * r);
-            if (h > 0 && validThousandths(h))
-              output += `Pour un cylindre de rayon ${r}, Hauteur = ${h.toFixed(3)}\n`;
-            else output += "Aucun résultat valide pour la hauteur avec ce rayon.\n";
-          }
-        } break;
-        case "cube": {
-          const a = parseFloat(prompt("Entrez l'arête du cube:"));
-          if (isNaN(a) || a <= 0) { output += "Valeur invalide.\n"; }
-          else {
-            const cubeAire = 6 * a * a;
-            output += `Pour un cube d'arête ${a}, Aire calculée = ${cubeAire.toFixed(3)} u²\n`;
-          }
-        } break;
-        case "prismeCarree": {
-          const a = parseFloat(prompt("Entrez l'arête de la base du prisme:"));
-          if (isNaN(a) || a <= 0) { output += "Valeur invalide.\n"; }
-          else {
-            const h = (aire - 2 * a * a) / (4 * a);
-            if (h > 0 && validThousandths(h))
-              output += `Pour un prisme à base carrée d'arête ${a}, Hauteur = ${h.toFixed(3)}\n`;
-            else output += "Aucun résultat valide pour la hauteur avec cette valeur.\n";
-          }
-        } break;
-        default:
-          output += "Choix invalide.\n";
-      }
-    } else {
-      output = "Choix de mode invalide.";
     }
 
     document.getElementById("aireOutput").textContent = output;
   }
 
   // ------------------------------
-  // Calculations based on a VOLUME value
+  // Calculs basés sur une valeur de volume
   // ------------------------------
   function calculerMesuresVolume() {
     const volume = parseFloat(document.getElementById("volumeInput").value);
-    const mode = document.getElementById("modeVolumeSelect").value;
     let output = "";
 
     if (isNaN(volume) || volume <= 0) {
@@ -275,120 +179,61 @@
       return;
     }
 
-    if (mode === "auto") {
-      output += "MODE AUTOMATIQUE\n\n";
-      // --- CONE ---
-      output += "--- CÔNE POSSIBLE ---\n";
-      // Volume d'un cône = (1/3)*π*r²*h  =>  h = 3*volume/(π*r²)
-      for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
-        const dims = tryConeDimensions_Volume(volume, r);
-        if (dims) {
-          output += `Cône -- Rayon: ${dims.r.toFixed(1)}   Hauteur: ${dims.h.toFixed(3)}   Génératrice: ${dims.g.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
-        }
-      }
+    output += "MODE AUTOMATIQUE\n\n";
 
-      // --- SPHERE ---
-      output += "\n--- SPHÈRE ---\n";
-      // Volume = (4/3)*π*r³  =>  r = cbrt((3*volume)/(4π))
-      const sphere_r = Math.cbrt((3 * volume) / (4 * Math.PI));
-      output += `Rayon de la sphère: ${sphere_r.toFixed(4)}\n`;
-
-      // --- CYLINDRE ---
-      output += "\n--- CYLINDRE POSSIBLE ---\n";
-      // Volume = π*r²*h  =>  h = volume/(π*r²)
-      for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
-        const r_val = r;
-        const h = volume / (Math.PI * r_val * r_val);
-        if (h > 0 && validThousandths(h))
-          output += `Cylindre -- Rayon: ${r_val.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+    // --- CÔNE ---
+    output += "--- CÔNE POSSIBLE ---\n";
+    // Volume d'un cône = (1/3)*π*r²*h  =>  h = 3*volume/(π*r²)
+    for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
+      const dims = tryConeDimensions_Volume(volume, r);
+      if (dims) {
+        output += `Cône -- Rayon: ${dims.r.toFixed(1)}   Hauteur: ${dims.h.toFixed(3)}   Génératrice: ${dims.g.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
       }
-
-      // --- CUBE ---
-      output += "\n--- CUBE ---\n";
-      // Volume = c³  =>  c = cbrt(volume)
-      const cube_edge = Math.cbrt(volume);
-      output += `Arête du cube: ${cube_edge.toFixed(4)}\n`;
-
-      // --- PRISME À BASE CARRÉE ---
-      output += "\n--- PRISME A BASE CARRÉE ---\n";
-      // Volume = a² * h  =>  h = volume/(a²)
-      for (let a = 0.5; a <= Math.cbrt(volume); a += 0.1) {
-        const h = volume / (a * a);
-        if (h > 0 && validThousandths(h)) {
-          const ap_base = a / 2.0;
-          const gen = Math.sqrt(h * h + ap_base * ap_base);
-          output += `Prisme base carrée -- Arête: ${a.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
-        }
-      }
-
-      // --- PYRAMIDE À BASE CARRÉE ---
-      output += "\n--- PYRAMIDE A BASE CARRÉE ---\n";
-      // Volume = (1/3)*c²*h  =>  h = 3*volume/(c²)
-      for (let c = 0.5; c <= Math.cbrt(volume * 3); c += 0.1) {
-        const h = (3 * volume) / (c * c);
-        if (h > 0 && validThousandths(h)) {
-          const ap_base = c / 2.0;
-          const gen = Math.sqrt(h * h + ap_base * ap_base);
-          output += `Pyramide carrée -- Arête: ${c.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${ap_base.toFixed(3)}   Génératrice: ${gen.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
-        }
-      }
-    } else if (mode === "manuel") {
-      output += "MODE MANUEL\n\n";
-      const solide = document.getElementById("solideVolumeSelect").value;
-      switch(solide) {
-        case "cone": {
-          const r = parseFloat(prompt("Entrez le rayon du cône:"));
-          if (isNaN(r) || r <= 0) { output += "Rayon invalide.\n"; }
-          else {
-            const h = (3 * volume) / (Math.PI * r * r);
-            const g = Math.sqrt(r * r + h * h);
-            if (g > 0 && isValidDimensionsForCone(r, h, g))
-              output += `Pour un cône de rayon ${r}, Hauteur = ${h.toFixed(3)}, Génératrice = ${g.toFixed(3)}\n`;
-            else output += "Aucun résultat valide pour ce rayon.\n";
-          }
-        } break;
-        case "sphere": {
-          const r = parseFloat(prompt("Entrez le rayon de la sphère:"));
-          if (isNaN(r) || r <= 0) { output += "Rayon invalide.\n"; }
-          else {
-            const vol_calc = (4/3) * Math.PI * Math.pow(r, 3);
-            output += `Pour une sphère de rayon ${r}, Volume calculé = ${vol_calc.toFixed(3)} u³\n`;
-          }
-        } break;
-        case "cylindre": {
-          const r = parseFloat(prompt("Entrez le rayon du cylindre:"));
-          if (isNaN(r) || r <= 0) { output += "Rayon invalide.\n"; }
-          else {
-            const h = volume / (Math.PI * r * r);
-            if (h > 0 && validThousandths(h))
-              output += `Pour un cylindre de rayon ${r}, Hauteur = ${h.toFixed(3)}\n`;
-            else output += "Aucun résultat valide pour ce rayon.\n";
-          }
-        } break;
-        case "cube": {
-          const a = parseFloat(prompt("Entrez l'arête du cube:"));
-          if (isNaN(a) || a <= 0) { output += "Valeur invalide.\n"; }
-          else {
-            const vol_calc = Math.pow(a, 3);
-            output += `Pour un cube d'arête ${a}, Volume calculé = ${vol_calc.toFixed(3)} u³\n`;
-          }
-        } break;
-        case "prismeCarree": {
-          const a = parseFloat(prompt("Entrez l'arête de la base du prisme:"));
-          if (isNaN(a) || a <= 0) { output += "Valeur invalide.\n"; }
-          else {
-            const h = volume / (a * a);
-            if (h > 0 && validThousandths(h))
-              output += `Pour un prisme à base carrée d'arête ${a}, Hauteur = ${h.toFixed(3)}\n`;
-            else output += "Aucun résultat valide pour cette valeur.\n";
-          }
-        } break;
-        default:
-          output += "Choix invalide.\n";
-      }
-    } else {
-      output = "Choix de mode invalide.";
     }
+
+    // --- SPHÈRE ---
+    output += "\n--- SPHÈRE ---\n";
+    // Volume = (4/3)*π*r³  =>  r = cbrt((3*volume)/(4π))
+    const sphere_r = Math.cbrt((3 * volume) / (4 * Math.PI));
+    output += `Rayon de la sphère: ${sphere_r.toFixed(4)}\n`;
+
+    // --- CYLINDRE ---
+    output += "\n--- CYLINDRE POSSIBLE ---\n";
+    // Volume = π*r²*h  =>  h = volume/(π*r²)
+    for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
+      const r_val = r;
+      const h = volume / (Math.PI * r_val * r_val);
+      if (h > 0 && validThousandths(h))
+        output += `Cylindre -- Rayon: ${r_val.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+    }
+
+    // --- CUBE ---
+    output += "\n--- CUBE ---\n";
+    // Volume = c³  =>  c = cbrt(volume)
+    const cube_edge = Math.cbrt(volume);
+    output += `Arête du cube: ${cube_edge.toFixed(4)}\n`;
+
+    // --- PRISME À BASE CARRÉE ---
+    output += "\n--- PRISME À BASE CARRÉE ---\n";
+    // Volume = a² * h  =>  h = volume/(a²)
+    for (let a = 0.5; a <= Math.cbrt(volume); a += 0.1) {
+      const h = volume / (a * a);
+      if (h > 0 && validThousandths(h))
+        output += `Prisme base carrée -- Arête: ${a.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+    }
+
+    // --- PYRAMIDE À BASE CARRÉE ---
+    output += "\n--- PYRAMIDE À BASE CARRÉE ---\n";
+    // Volume = (1/3)*c²*h  =>  h = 3*volume/(c²)
+    for (let c = 0.5; c <= Math.cbrt(volume * 3); c += 0.1) {
+      const h = (3 * volume) / (c * c);
+      if (h > 0 && validThousandths(h)) {
+        const ap_base = c / 2.0;
+        const gen = Math.sqrt(h * h + ap_base * ap_base);
+        output += `Pyramide carrée -- Arête: ${c.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${ap_base.toFixed(3)}   Génératrice: ${gen.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+      }
+    }
+
     document.getElementById("volumeOutput").textContent = output;
   }
 </script>
