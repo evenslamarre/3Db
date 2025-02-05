@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.beginPath();
     ctx.arc(origine.x + pA.x * scale, origine.y + pA.y * scale, 3, 0, 2 * Math.PI);
     ctx.fill();
-    // Lignes de cote : rayon (étiquette "c"), hauteur (étiquette "h") et génératrice (étiquette "g")
+    // Lignes de cote : rayon (étiquette "r"), hauteur (étiquette "h") et génératrice (étiquette "g")
     dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: r, y: yBas, z: 0 }, "r");
     dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
     const s = Math.sqrt(r * r + (yHaut - yBas) ** 2);
@@ -800,7 +800,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.closePath();
     ctx.stroke();
     // Lignes de cote : rayon ("c") et hauteur ("h")
-    dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: r, y: yBas, z: 0 }, "c");
+    dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: r, y: yBas, z: 0 }, "r");
     dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
   }
 
@@ -927,8 +927,8 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.ellipse(cx, cy, r * scale, r * scale * 0.5, 0, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.setLineDash([]);
-    // Ligne de cote pour le rayon (étiquette "c")
-    dessinerLigneCote(ctx, origine, scale, { x: 0, y: centreY, z: 0 }, { x: r/Math.sqrt(3), y: centreY, z: -r/Math.sqrt(3) }, "c");
+    // Ligne de cote pour le rayon (étiquette "r")
+    dessinerLigneCote(ctx, origine, scale, { x: 0, y: centreY, z: 0 }, { x: r/Math.sqrt(3), y: centreY, z: -r/Math.sqrt(3) }, "r");
   }
 
   // --- Dessiner la scène ---
