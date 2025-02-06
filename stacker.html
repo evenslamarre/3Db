@@ -58,6 +58,23 @@
       font-weight: bold;
     }
     hr { margin: 10px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table td {
+      padding: 5px;
+      border-bottom: 1px solid #ccc;
+    }
+    table td:first-child {
+      font-weight: bold;
+      width: 50%;
+      text-align: right;
+    }
+    table td:last-child {
+      text-align: left;
+    }
   </style>
 </head>
 <body>
@@ -78,7 +95,7 @@
   <hr>
   <div>
     <label for="unite">Unité de mesure :</label>
-    <input type="text" id="unite" value="u">
+    <input type="text" id="unite" value="cm">
   </div>
   <div>
     <label for="zoomInput">Zoom (valeur numérique) :</label>
@@ -94,50 +111,50 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const typeFormeSelect = document.getElementById('typeForme');
-  const paramsFormeDiv = document.getElementById('paramsForme');
-  const btnAjouterForme = document.getElementById('btnAjouterForme');
-  const listeFormesDiv = document.getElementById('listeFormes');
-  const uniteInput = document.getElementById('unite');
-  const zoomInput = document.getElementById('zoomInput');
+  document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const typeFormeSelect = document.getElementById('typeForme');
+    const paramsFormeDiv = document.getElementById('paramsForme');
+    const btnAjouterForme = document.getElementById('btnAjouterForme');
+    const listeFormesDiv = document.getElementById('listeFormes');
+    const uniteInput = document.getElementById('unite');
+    const zoomInput = document.getElementById('zoomInput');
 
-  let formes = [];
-  let indexEdition = -1;
+    let formes = [];
+    let indexEdition = -1;
 
-  // Variables pour le zoom et le panoramique
-  let zoomActuel = parseFloat(zoomInput.value);
-  let offsetX = 0, offsetY = 0;
-  let estEnPanoramique = false, dernierX = 0, dernierY = 0;
+    // Variables pour le zoom et le panoramique
+    let zoomActuel = parseFloat(zoomInput.value);
+    let offsetX = 0, offsetY = 0;
+    let estEnPanoramique = false, dernierX = 0, dernierY = 0;
 
-  // --- Redimensionnement du Canvas ---
-  function redimensionnerCanvas() {
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
-    dessinerScene();
-  }
-  window.addEventListener('resize', redimensionnerCanvas);
-  redimensionnerCanvas();
+    // --- Redimensionnement du Canvas ---
+    function redimensionnerCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      dessinerScene();
+    }
+    window.addEventListener('resize', redimensionnerCanvas);
+    redimensionnerCanvas();
 
-  // Paramètres globaux pour le dessin.
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  ctx.lineWidth = 2;
+    // Paramètres globaux pour le dessin.
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 2;
 
-  // --- Panneau de paramètres dynamique ---
-  function mettreAJourParamsForme() {
-    const type = typeFormeSelect.value;
-    if (type === 'cone' || type === 'cylindre') {
-      paramsFormeDiv.innerHTML = `
+    // --- Panneau de paramètres dynamique ---
+    function mettreAJourParamsForme() {
+      const type = typeFormeSelect.value;
+      if (type === 'cone' || type === 'cylindre') {
+        paramsFormeDiv.innerHTML = `
         <label for="param_rayon">Rayon :</label>
         <input type="number" step="any" id="param_rayon" required>
         <label for="param_hauteur">Hauteur :</label>
         <input type="number" step="any" id="param_hauteur" required>
       `;
-    } else if (type === 'pyramide') {
-      paramsFormeDiv.innerHTML = `
+      } else if (type === 'pyramide') {
+        paramsFormeDiv.innerHTML = `
         <label for="param_typeBase">Type de base :</label>
         <select id="param_typeBase">
           <option value="carre">Carré</option>
@@ -147,10 +164,10 @@ document.addEventListener('DOMContentLoaded', function() {
         </select>
         <div id="paramsPyramide"></div>
       `;
-      document.getElementById('param_typeBase').addEventListener('change', mettreAJourParamsPyramide);
-      mettreAJourParamsPyramide();
-    } else if (type === 'prisme') {
-      paramsFormeDiv.innerHTML = `
+        document.getElementById('param_typeBase').addEventListener('change', mettreAJourParamsPyramide);
+        mettreAJourParamsPyramide();
+      } else if (type === 'prisme') {
+        paramsFormeDiv.innerHTML = `
         <label for="param_typeBase">Type de base :</label>
         <select id="param_typeBase">
           <option value="carre">Carré</option>
@@ -161,27 +178,27 @@ document.addEventListener('DOMContentLoaded', function() {
         </select>
         <div id="paramsPrisme"></div>
       `;
-      document.getElementById('param_typeBase').addEventListener('change', mettreAJourParamsPrisme);
-      mettreAJourParamsPrisme();
-    } else if (type === 'sphere') {
-      paramsFormeDiv.innerHTML = `
+        document.getElementById('param_typeBase').addEventListener('change', mettreAJourParamsPrisme);
+        mettreAJourParamsPrisme();
+      } else if (type === 'sphere') {
+        paramsFormeDiv.innerHTML = `
         <label for="param_rayon">Rayon :</label>
         <input type="number" step="any" id="param_rayon" required>
       `;
+      }
     }
-  }
-  function mettreAJourParamsPyramide() {
-    const typeBase = document.getElementById('param_typeBase').value;
-    const container = document.getElementById('paramsPyramide');
-    if (typeBase === 'carre' || typeBase === 'triangle') {
-      container.innerHTML = `
+    function mettreAJourParamsPyramide() {
+      const typeBase = document.getElementById('param_typeBase').value;
+      const container = document.getElementById('paramsPyramide');
+      if (typeBase === 'carre' || typeBase === 'triangle') {
+        container.innerHTML = `
         <label for="param_cote">Côté (c) :</label>
         <input type="number" step="any" id="param_cote" required>
         <label for="param_hauteur">Hauteur (h) :</label>
         <input type="number" step="any" id="param_hauteur" required>
       `;
-    } else if (typeBase === 'rectangle') {
-      container.innerHTML = `
+      } else if (typeBase === 'rectangle') {
+        container.innerHTML = `
         <label for="param_largeur">Largeur (c) :</label>
         <input type="number" step="any" id="param_largeur" required>
         <label for="param_profondeur">Profondeur (c) :</label>
@@ -189,8 +206,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <label for="param_hauteur">Hauteur (h) :</label>
         <input type="number" step="any" id="param_hauteur" required>
       `;
-    } else if (typeBase === 'n-gone') {
-      container.innerHTML = `
+      } else if (typeBase === 'n-gone') {
+        container.innerHTML = `
         <label for="param_n">Nombre de côtés (n) :</label>
         <input type="number" step="1" id="param_n" required>
         <label for="param_cote">Côté (c) :</label>
@@ -198,20 +215,20 @@ document.addEventListener('DOMContentLoaded', function() {
         <label for="param_hauteur">Hauteur (h) :</label>
         <input type="number" step="any" id="param_hauteur" required>
       `;
+      }
     }
-  }
-  function mettreAJourParamsPrisme() {
-    const typeBase = document.getElementById('param_typeBase').value;
-    const container = document.getElementById('paramsPrisme');
-    if (typeBase === 'carre' || typeBase === 'triangle') {
-      container.innerHTML = `
+    function mettreAJourParamsPrisme() {
+      const typeBase = document.getElementById('param_typeBase').value;
+      const container = document.getElementById('paramsPrisme');
+      if (typeBase === 'carre' || typeBase === 'triangle') {
+        container.innerHTML = `
         <label for="param_cote">Côté (c) :</label>
         <input type="number" step="any" id="param_cote" required>
         <label for="param_hauteur">Hauteur (h) :</label>
         <input type="number" step="any" id="param_hauteur" required>
       `;
-    } else if (typeBase === 'rectangle') {
-      container.innerHTML = `
+      } else if (typeBase === 'rectangle') {
+        container.innerHTML = `
         <label for="param_largeur">Largeur (c) :</label>
         <input type="number" step="any" id="param_largeur" required>
         <label for="param_profondeur">Profondeur (c) :</label>
@@ -219,8 +236,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <label for="param_hauteur">Hauteur (h) :</label>
         <input type="number" step="any" id="param_hauteur" required>
       `;
-    } else if (typeBase === 'n-gone') {
-      container.innerHTML = `
+      } else if (typeBase === 'n-gone') {
+        container.innerHTML = `
         <label for="param_n">Nombre de côtés (n) :</label>
         <input type="number" step="1" id="param_n" required>
         <label for="param_cote">Côté (c) :</label>
@@ -228,8 +245,8 @@ document.addEventListener('DOMContentLoaded', function() {
         <label for="param_hauteur">Hauteur (h) :</label>
         <input type="number" step="any" id="param_hauteur" required>
       `;
-    } else if (typeBase === 'trapeze') {
-      container.innerHTML = `
+      } else if (typeBase === 'trapeze') {
+        container.innerHTML = `
         <label for="param_base1">Base 1 (en haut) :</label>
         <input type="number" step="any" id="param_base1" required>
         <label for="param_base2">Base 2 (en bas) :</label>
@@ -239,798 +256,840 @@ document.addEventListener('DOMContentLoaded', function() {
         <label for="param_hauteur">Hauteur du prisme (h) :</label>
         <input type="number" step="any" id="param_hauteur" required>
       `;
-    }
-  }
-  typeFormeSelect.addEventListener('change', mettreAJourParamsForme);
-  mettreAJourParamsForme();
-
-  // --- Ajouter ou mettre à jour une forme ---
-  btnAjouterForme.addEventListener('click', ajouterOuMettreAJourForme);
-  function ajouterOuMettreAJourForme() {
-    const type = typeFormeSelect.value;
-    const unite = uniteInput.value || "u";
-    let params = {};
-    if (type === 'cone' || type === 'cylindre') {
-      params.rayon = document.getElementById('param_rayon').value;
-      params.hauteur = document.getElementById('param_hauteur').value;
-    } else if (type === 'pyramide') {
-      params.typeBase = document.getElementById('param_typeBase').value;
-      if (params.typeBase === 'carre' || params.typeBase === 'triangle') {
-        params.cote = document.getElementById('param_cote').value;
-        params.hauteur = document.getElementById('param_hauteur').value;
-      } else if (params.typeBase === 'rectangle') {
-        params.largeur = document.getElementById('param_largeur').value;
-        params.profondeur = document.getElementById('param_profondeur').value;
-        params.hauteur = document.getElementById('param_hauteur').value;
-      } else if (params.typeBase === 'n-gone') {
-        params.n = document.getElementById('param_n').value;
-        params.cote = document.getElementById('param_cote').value;
-        params.hauteur = document.getElementById('param_hauteur').value;
       }
-    } else if (type === 'prisme') {
-      params.typeBase = document.getElementById('param_typeBase').value;
-      if (params.typeBase === 'carre' || params.typeBase === 'triangle') {
-        params.cote = document.getElementById('param_cote').value;
-        params.hauteur = document.getElementById('param_hauteur').value;
-      } else if (params.typeBase === 'rectangle') {
-        params.largeur = document.getElementById('param_largeur').value;
-        params.profondeur = document.getElementById('param_profondeur').value;
-        params.hauteur = document.getElementById('param_hauteur').value;
-      } else if (params.typeBase === 'n-gone') {
-        params.n = document.getElementById('param_n').value;
-        params.cote = document.getElementById('param_cote').value;
-        params.hauteur = document.getElementById('param_hauteur').value;
-      } else if (params.typeBase === 'trapeze') {
-        params.base1 = document.getElementById('param_base1').value;
-        params.base2 = document.getElementById('param_base2').value;
-        params.hauteurTrapeze = document.getElementById('param_hauteurTrapeze').value;
-        params.hauteur = document.getElementById('param_hauteur').value;
-      }
-    } else if (type === 'sphere') {
-      params.rayon = document.getElementById('param_rayon').value;
-      // Pour la sphère, on définit la hauteur comme le diamètre (mais ne sera utilisé que pour l'empilement)
-      params.hauteur = 2 * parseFloat(params.rayon);
     }
-    if (indexEdition === -1) {
-      formes.push({ type, params, unite });
-      calculerProprietes(formes[formes.length - 1]);
-    } else {
-      formes[indexEdition] = { type, params, unite };
-      calculerProprietes(formes[indexEdition]);
-      indexEdition = -1;
-      btnAjouterForme.textContent = "Ajouter la forme";
-    }
-    mettreAJourEmpilement();
-    mettreAJourListeFormes();
-    dessinerScene();
-  }
-
-  // --- Contrôles pour supprimer, déplacer et éditer ---
-  window.supprimerForme = function(index) {
-    formes.splice(index, 1);
-    mettreAJourEmpilement();
-    mettreAJourListeFormes();
-    dessinerScene();
-  };
-  window.deplacerForme = function(index, direction) {
-    if (direction === 'haut' && index < formes.length - 1) {
-      [formes[index], formes[index + 1]] = [formes[index + 1], formes[index]];
-    } else if (direction === 'bas' && index > 0) {
-      [formes[index], formes[index - 1]] = [formes[index - 1], formes[index]];
-    }
-    mettreAJourEmpilement();
-    mettreAJourListeFormes();
-    dessinerScene();
-  };
-  window.editerForme = function(index) {
-    const forme = formes[index];
-    typeFormeSelect.value = forme.type;
+    typeFormeSelect.addEventListener('change', mettreAJourParamsForme);
     mettreAJourParamsForme();
-    if (forme.type === 'cone' || forme.type === 'cylindre') {
-      document.getElementById('param_rayon').value = forme.params.rayon;
-      document.getElementById('param_hauteur').value = forme.params.hauteur;
-    } else if (forme.type === 'pyramide') {
-      document.getElementById('param_typeBase').value = forme.params.typeBase;
-      mettreAJourParamsPyramide();
-      if (forme.params.typeBase === 'carre' || forme.params.typeBase === 'triangle') {
-        document.getElementById('param_cote').value = forme.params.cote;
-        document.getElementById('param_hauteur').value = forme.params.hauteur;
-      } else if (forme.params.typeBase === 'rectangle') {
-        document.getElementById('param_largeur').value = forme.params.largeur;
-        document.getElementById('param_profondeur').value = forme.params.profondeur;
-        document.getElementById('param_hauteur').value = forme.params.hauteur;
-      } else if (forme.params.typeBase === 'n-gone') {
-        document.getElementById('param_n').value = forme.params.n;
-        document.getElementById('param_cote').value = forme.params.cote;
-        document.getElementById('param_hauteur').value = forme.params.hauteur;
+
+    // --- Ajouter ou mettre à jour une forme ---
+    btnAjouterForme.addEventListener('click', ajouterOuMettreAJourForme);
+    function ajouterOuMettreAJourForme() {
+      const type = typeFormeSelect.value;
+      const unite = uniteInput.value || "u";
+      let params = {};
+      if (type === 'cone' || type === 'cylindre') {
+        params.rayon = document.getElementById('param_rayon').value;
+        params.hauteur = document.getElementById('param_hauteur').value;
+      } else if (type === 'pyramide') {
+        params.typeBase = document.getElementById('param_typeBase').value;
+        if (params.typeBase === 'carre' || params.typeBase === 'triangle') {
+          params.cote = document.getElementById('param_cote').value;
+          params.hauteur = document.getElementById('param_hauteur').value;
+        } else if (params.typeBase === 'rectangle') {
+          params.largeur = document.getElementById('param_largeur').value;
+          params.profondeur = document.getElementById('param_profondeur').value;
+          params.hauteur = document.getElementById('param_hauteur').value;
+        } else if (params.typeBase === 'n-gone') {
+          params.n = document.getElementById('param_n').value;
+          params.cote = document.getElementById('param_cote').value;
+          params.hauteur = document.getElementById('param_hauteur').value;
+        }
+      } else if (type === 'prisme') {
+        params.typeBase = document.getElementById('param_typeBase').value;
+        if (params.typeBase === 'carre' || params.typeBase === 'triangle') {
+          params.cote = document.getElementById('param_cote').value;
+          params.hauteur = document.getElementById('param_hauteur').value;
+        } else if (params.typeBase === 'rectangle') {
+          params.largeur = document.getElementById('param_largeur').value;
+          params.profondeur = document.getElementById('param_profondeur').value;
+          params.hauteur = document.getElementById('param_hauteur').value;
+        } else if (params.typeBase === 'n-gone') {
+          params.n = document.getElementById('param_n').value;
+          params.cote = document.getElementById('param_cote').value;
+          params.hauteur = document.getElementById('param_hauteur').value;
+        } else if (params.typeBase === 'trapeze') {
+          params.base1 = document.getElementById('param_base1').value;
+          params.base2 = document.getElementById('param_base2').value;
+          params.hauteurTrapeze = document.getElementById('param_hauteurTrapeze').value;
+          params.hauteur = document.getElementById('param_hauteur').value;
+        }
+      } else if (type === 'sphere') {
+        params.rayon = document.getElementById('param_rayon').value;
+        // Pour la sphère, on définit la hauteur comme le diamètre (mais ne sera utilisé que pour l'empilement)
+        params.hauteur = 2 * parseFloat(params.rayon);
       }
-    } else if (forme.type === 'prisme') {
-      document.getElementById('param_typeBase').value = forme.params.typeBase;
-      mettreAJourParamsPrisme();
-      if (forme.params.typeBase === 'carre' || forme.params.typeBase === 'triangle') {
-        document.getElementById('param_cote').value = forme.params.cote;
-        document.getElementById('param_hauteur').value = forme.params.hauteur;
-      } else if (forme.params.typeBase === 'rectangle') {
-        document.getElementById('param_largeur').value = forme.params.largeur;
-        document.getElementById('param_profondeur').value = forme.params.profondeur;
-        document.getElementById('param_hauteur').value = forme.params.hauteur;
-      } else if (forme.params.typeBase === 'n-gone') {
-        document.getElementById('param_n').value = forme.params.n;
-        document.getElementById('param_cote').value = forme.params.cote;
-        document.getElementById('param_hauteur').value = forme.params.hauteur;
-      } else if (forme.params.typeBase === 'trapeze') {
-        document.getElementById('param_base1').value = forme.params.base1;
-        document.getElementById('param_base2').value = forme.params.base2;
-        document.getElementById('param_hauteurTrapeze').value = forme.params.hauteurTrapeze;
-        document.getElementById('param_hauteur').value = forme.params.hauteur;
+      if (indexEdition === -1) {
+        formes.push({ type, params, unite });
+        calculerProprietes(formes[formes.length - 1]);
+      } else {
+        formes[indexEdition] = { type, params, unite };
+        calculerProprietes(formes[indexEdition]);
+        indexEdition = -1;
+        btnAjouterForme.textContent = "Ajouter la forme";
       }
-    } else if (forme.type === 'sphere') {
-      document.getElementById('param_rayon').value = forme.params.rayon;
+      mettreAJourEmpilement();
+      mettreAJourListeFormes();
+      dessinerScene();
     }
-    uniteInput.value = forme.unite;
-    btnAjouterForme.textContent = "Mettre à jour la forme";
-    indexEdition = index;
-  };
 
-  // --- Mise à jour des niveaux d'empilement ---
-  function mettreAJourEmpilement() {
-    let niveauCourant = 0;
-    formes.forEach(forme => {
-      forme.bas = niveauCourant;
-      let h = parseFloat(forme.params.hauteur);
-      forme.haut = forme.bas + h;
-      niveauCourant = forme.haut;
-    });
-  }
-
-  // --- Calcul des propriétés géométriques (zones, volumes, etc.) ---
-  function calculerProprietes(forme) {
-    let calc = {};
-    if (forme.type === 'cone') {
-      const r = parseFloat(forme.params.rayon);
-      const h = parseFloat(forme.params.hauteur);
-      const s = Math.sqrt(r * r + h * h);
-      calc.lateral = Math.PI * r * s;
-      calc.total = Math.PI * r * (r + s);
-      calc.volume = (1/3) * Math.PI * r * r * h;
-    } else if (forme.type === 'cylindre') {
-      const r = parseFloat(forme.params.rayon);
-      const h = parseFloat(forme.params.hauteur);
-      calc.lateral = 2 * Math.PI * r * h;
-      calc.total = 2 * Math.PI * r * (r + h);
-      calc.volume = Math.PI * r * r * h;
-    } else if (forme.type === 'pyramide') {
-      const typeBase = forme.params.typeBase;
-      const h = parseFloat(forme.params.hauteur);
-      if (typeBase === 'carre') {
-        const c = parseFloat(forme.params.cote);
-        const base = c * c;
-        const s = Math.sqrt((c/2)**2 + h * h);
-        calc.lateral = 2 * c * s;
-        calc.total = base + calc.lateral;
-        calc.volume = (1/3) * base * h;
-      } else if (typeBase === 'rectangle') {
-        const c1 = parseFloat(forme.params.largeur);
-        const c2 = parseFloat(forme.params.profondeur);
-        const base = c1 * c2;
-        const s1 = Math.sqrt((c2/2)**2 + h * h);
-        const s2 = Math.sqrt((c1/2)**2 + h * h);
-        calc.lateral = c1 * s1 + c2 * s2;
-        calc.total = base + calc.lateral;
-        calc.volume = (1/3) * base * h;
-      } else if (typeBase === 'triangle') {
-        const c = parseFloat(forme.params.cote);
-        const base = (Math.sqrt(3)/4) * c * c;
-        const s = Math.sqrt(h * h + (c/Math.sqrt(3))**2);
-        calc.lateral = (3 * c * s) / 2;
-        calc.total = base + calc.lateral;
-        calc.volume = (1/3) * base * h;
-      } else if (typeBase === 'n-gone') {
-        const n = parseInt(forme.params.n);
-        const c = parseFloat(forme.params.cote);
-        const base = (n * c * c) / (4 * Math.tan(Math.PI/n));
-        const R = c / (2 * Math.sin(Math.PI/n));
-        const s = Math.sqrt(h * h + R * R);
-        calc.lateral = 0.5 * n * c * s;
-        calc.total = base + calc.lateral;
-        calc.volume = (1/3) * base * h;
+    // --- Contrôles pour supprimer, déplacer et éditer ---
+    window.supprimerForme = function(index) {
+      formes.splice(index, 1);
+      mettreAJourEmpilement();
+      mettreAJourListeFormes();
+      dessinerScene();
+    };
+    window.deplacerForme = function(index, direction) {
+      if (direction === 'haut' && index < formes.length - 1) {
+        [formes[index], formes[index + 1]] = [formes[index + 1], formes[index]];
+      } else if (direction === 'bas' && index > 0) {
+        [formes[index], formes[index - 1]] = [formes[index - 1], formes[index]];
       }
-    } else if (forme.type === 'prisme') {
+      mettreAJourEmpilement();
+      mettreAJourListeFormes();
+      dessinerScene();
+    };
+    window.editerForme = function(index) {
+      const forme = formes[index];
+      typeFormeSelect.value = forme.type;
+      mettreAJourParamsForme();
+      if (forme.type === 'cone' || forme.type === 'cylindre') {
+        document.getElementById('param_rayon').value = forme.params.rayon;
+        document.getElementById('param_hauteur').value = forme.params.hauteur;
+      } else if (forme.type === 'pyramide') {
+        document.getElementById('param_typeBase').value = forme.params.typeBase;
+        mettreAJourParamsPyramide();
+        if (forme.params.typeBase === 'carre' || forme.params.typeBase === 'triangle') {
+          document.getElementById('param_cote').value = forme.params.cote;
+          document.getElementById('param_hauteur').value = forme.params.hauteur;
+        } else if (forme.params.typeBase === 'rectangle') {
+          document.getElementById('param_largeur').value = forme.params.largeur;
+          document.getElementById('param_profondeur').value = forme.params.profondeur;
+          document.getElementById('param_hauteur').value = forme.params.hauteur;
+        } else if (forme.params.typeBase === 'n-gone') {
+          document.getElementById('param_n').value = forme.params.n;
+          document.getElementById('param_cote').value = forme.params.cote;
+          document.getElementById('param_hauteur').value = forme.params.hauteur;
+        }
+      } else if (forme.type === 'prisme') {
+        document.getElementById('param_typeBase').value = forme.params.typeBase;
+        mettreAJourParamsPrisme();
+        if (forme.params.typeBase === 'carre' || forme.params.typeBase === 'triangle') {
+          document.getElementById('param_cote').value = forme.params.cote;
+          document.getElementById('param_hauteur').value = forme.params.hauteur;
+        } else if (forme.params.typeBase === 'rectangle') {
+          document.getElementById('param_largeur').value = forme.params.largeur;
+          document.getElementById('param_profondeur').value = forme.params.profondeur;
+          document.getElementById('param_hauteur').value = forme.params.hauteur;
+        } else if (forme.params.typeBase === 'n-gone') {
+          document.getElementById('param_n').value = forme.params.n;
+          document.getElementById('param_cote').value = forme.params.cote;
+          document.getElementById('param_hauteur').value = forme.params.hauteur;
+        } else if (forme.params.typeBase === 'trapeze') {
+          document.getElementById('param_base1').value = forme.params.base1;
+          document.getElementById('param_base2').value = forme.params.base2;
+          document.getElementById('param_hauteurTrapeze').value = forme.params.hauteurTrapeze;
+          document.getElementById('param_hauteur').value = forme.params.hauteur;
+        }
+      } else if (forme.type === 'sphere') {
+        document.getElementById('param_rayon').value = forme.params.rayon;
+      }
+      uniteInput.value = forme.unite;
+      btnAjouterForme.textContent = "Mettre à jour la forme";
+      indexEdition = index;
+    };
+
+    // --- Mise à jour des niveaux d'empilement ---
+    function mettreAJourEmpilement() {
+      let niveauCourant = 0;
+      formes.forEach(forme => {
+        forme.bas = niveauCourant;
+        let h = parseFloat(forme.params.hauteur);
+        forme.haut = forme.bas + h;
+        niveauCourant = forme.haut;
+      });
+    }
+
+    // --- Calcul des propriétés géométriques (zones, volumes, etc.) ---
+    function calculerProprietes(forme) {
+      let calc = {};
+      // Calcul du périmètre de la base
+      if (forme.type === 'cone') {
+        const r = parseFloat(forme.params.rayon);
+        const h = parseFloat(forme.params.hauteur);
+        const s = Math.sqrt(r * r + h * h);
+        calc.lateral = Math.PI * r * s;
+        calc.total = Math.PI * r * (r + s);
+        calc.volume = (1/3) * Math.PI * r * r * h;
+        calc.perimetreBase = 2 * Math.PI * r;
+        // Ajout de la génératrice (slant height)
+        calc.generatrice = s;
+      } else if (forme.type === 'cylindre') {
+        const r = parseFloat(forme.params.rayon);
+        const h = parseFloat(forme.params.hauteur);
+        calc.lateral = 2 * Math.PI * r * h;
+        calc.total = 2 * Math.PI * r * (r + h);
+        calc.volume = Math.PI * r * r * h;
+        calc.perimetreBase = 2 * Math.PI * r;
+      } else if (forme.type === 'pyramide') {
+        const typeBase = forme.params.typeBase;
+        const h = parseFloat(forme.params.hauteur);
+        if (typeBase === 'carre') {
+          const c = parseFloat(forme.params.cote);
+          const base = c * c;
+          const s = Math.sqrt((c/2)**2 + h * h);
+          calc.lateral = 4 * (c/2) * s;
+          calc.total = base + calc.lateral;
+          calc.volume = (1/3) * base * h;
+          calc.perimetreBase = 4 * c;
+          // Ajout de la génératrice
+          calc.generatrice = s;
+        } else if (typeBase === 'rectangle') {
+
+          const c1 = parseFloat(forme.params.largeur);
+          const c2 = parseFloat(forme.params.profondeur);
+          const base = c1 * c2;
+          const s1 = Math.sqrt((c2/2)**2 + h * h);
+          const s2 = Math.sqrt((c1/2)**2 + h * h);
+          calc.lateral = c1 * s1 + c2 * s2;
+          calc.total = base + calc.lateral;
+          calc.volume = (1/3) * base * h;
+          calc.perimetreBase = 2 * (c1 + c2);
+          calc.generatrice = s1;
+
+        } else if (typeBase === 'triangle') {
+          const c = parseFloat(forme.params.cote);
+          const base = (Math.sqrt(3)/4) * c * c;
+          const s = Math.sqrt(h * h + (c/Math.sqrt(3))**2);
+          calc.lateral = (3 * c * s) / 2;
+          calc.total = base + calc.lateral;
+          calc.volume = (1/3) * base * h;
+          calc.perimetreBase = 3 * c;
+          calc.generatrice = s1;
+        } else if (typeBase === 'n-gone') {
+          const n = parseInt(forme.params.n);
+          const c = parseFloat(forme.params.cote);
+          const base = (n * c * c) / (4 * Math.tan(Math.PI/n));
+          const R = c / (2 * Math.sin(Math.PI/n));
+          const s = Math.sqrt(h * h + R * R);
+          calc.lateral = 0.5 * n * c * s;
+          calc.total = base + calc.lateral;
+          calc.volume = (1/3) * base * h;
+          calc.perimetreBase = n * c;
+          // Pour les n‑gone, ajouter la génératrice et l'apothème de la base
+          calc.generatrice = s; // slant height
+          calc.apotheme = c / (2 * Math.tan(Math.PI/n));
+        }
+      } else if (forme.type === 'prisme') {
+        const typeBase = forme.params.typeBase;
+        const h = parseFloat(forme.params.hauteur);
+        if (typeBase === 'carre') {
+          const c = parseFloat(forme.params.cote);
+          const base = c * c;
+          calc.lateral = 4 * c * h;
+          calc.total = 2 * base + calc.lateral;
+          calc.volume = base * h;
+          calc.perimetreBase = 4 * c;
+        } else if (typeBase === 'rectangle') {
+          const c1 = parseFloat(forme.params.largeur);
+          const c2 = parseFloat(forme.params.profondeur);
+          const base = c1 * c2;
+          calc.lateral = 2 * (c1 + c2) * h;
+          calc.total = 2 * base + calc.lateral;
+          calc.volume = base * h;
+          calc.perimetreBase = 2 * (c1 + c2);
+        } else if (typeBase === 'triangle') {
+          const c = parseFloat(forme.params.cote);
+          const base = (Math.sqrt(3)/4) * c * c;
+          calc.lateral = 3 * c * h;
+          calc.total = 2 * base + calc.lateral;
+          calc.volume = base * h;
+          calc.perimetreBase = 3 * c;
+        } else if (typeBase === 'n-gone') {
+          const n = parseInt(forme.params.n);
+          const c = parseFloat(forme.params.cote);
+          const base = (n * c * c) / (4 * Math.tan(Math.PI/n));
+          calc.lateral = n * c * h;
+          calc.total = 2 * base + calc.lateral;
+          calc.volume = base * h;
+          calc.perimetreBase = n * c;
+          // Pour les n‑gone, on ajoute l'apothème de la base (pas de génératrice car le prisme est droit)
+          calc.apotheme = c / (2 * Math.tan(Math.PI/n));
+        } else if (typeBase === 'trapeze') {
+          const b1 = parseFloat(forme.params.base1);
+          const b2 = parseFloat(forme.params.base2);
+          const tH = parseFloat(forme.params.hauteurTrapeze);
+          const base = ((b1 + b2) / 2) * tH;
+          const cote = Math.sqrt(((b2 - b1) / 2)**2 + tH * tH);
+          calc.lateral = (b1 + b2 + 2 * cote) * h;
+          calc.total = 2 * base + calc.lateral;
+          calc.volume = base * h;
+          calc.perimetreBase = b1 + b2 + 2 * cote;
+        }
+      } else if (forme.type === 'sphere') {
+        const r = parseFloat(forme.params.rayon);
+        calc.total = 4 * Math.PI * r * r;
+        calc.lateral = calc.total;
+        calc.volume = (4/3) * Math.PI * r * r * r;
+        // Pas de périmètre de base pour la sphère
+      }
+      forme.calc = calc;
+    }
+
+    // --- Projection isométrique ---
+    function projeter(x, y, z) {
+      const angle = Math.PI / 6; // 30°
+      const isoX = (x - z) * Math.cos(angle);
+      const isoY = y + (x + z) * Math.sin(angle);
+      return { x: isoX, y: -isoY };
+    }
+
+    // --- Dessiner une ligne de cote (avec seulement une lettre) ---
+    function dessinerLigneCote(ctx, origine, scale, pt1, pt2, etiquette) {
+      const p1 = projeter(pt1.x, pt1.y, pt1.z);
+      const p2 = projeter(pt2.x, pt2.y, pt2.z);
+      const x1 = origine.x + p1.x * scale;
+      const y1 = origine.y + p1.y * scale;
+      const x2 = origine.x + p2.x * scale;
+      const y2 = origine.y + p2.y * scale;
+
+      ctx.save();
+      ctx.lineWidth = 1;
+      ctx.setLineDash([10, 10]);
+      ctx.strokeStyle = 'blue';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Calculer le point médian de la ligne
+      const midX = (x1 + x2) / 2;
+      const midY = (y1 + y2) / 2;
+
+      // Calculer le vecteur directeur de la ligne
+      const vx = x2 - x1;
+      const vy = y2 - y1;
+      const length = Math.sqrt(vx * vx + vy * vy);
+
+      // Calculer le vecteur normal pour obtenir la direction gauche (perpendiculaire)
+      const nx = -vy / length;
+      const ny = vx / length;
+
+      // Appliquer un décalage (ici 15 pixels) dans la direction du vecteur normal
+      const offset = 15;
+      const labelX = midX + nx * offset;
+      const labelY = midY + ny * offset;
+
+      // Afficher l'étiquette
+      ctx.fillStyle = 'blue';
+      ctx.font = "15px sans-serif";
+      ctx.fillText(etiquette, labelX, labelY);
+
+      ctx.restore();
+    }
+
+    // --- Fonction utilitaire : calcul du point milieu (même y) ---
+    function pointMilieu(pt1, pt2) {
+      return {
+        x: (pt1.x + pt2.x) / 2,
+        y: pt1.y,
+        z: (pt1.z + pt2.z) / 2
+      };
+    }
+
+    // --- Calcul de l'enveloppe convexe (algorithme d'Andrew) ---
+    function enveloppeConvexe(points) {
+      let pts = points.slice();
+      pts.sort((a, b) => {
+        if (a.proj.x === b.proj.x) return a.proj.y - b.proj.y;
+        return a.proj.x - b.proj.x;
+      });
+      const bas = [];
+      for (let p of pts) {
+        while (bas.length >= 2 && ((bas[bas.length - 1].proj.x - bas[bas.length - 2].proj.x) * (p.proj.y - bas[bas.length - 2].proj.y) - (bas[bas.length - 1].proj.y - bas[bas.length - 2].proj.y) * (p.proj.x - bas[bas.length - 2].proj.x)) <= 0) {
+          bas.pop();
+        }
+        bas.push(p);
+      }
+      const haut = [];
+      for (let i = pts.length - 1; i >= 0; i--) {
+        let p = pts[i];
+        while (haut.length >= 2 && ((haut[haut.length - 1].proj.x - haut[haut.length - 2].proj.x) * (p.proj.y - haut[haut.length - 2].proj.y) - (haut[haut.length - 1].proj.y - haut[haut.length - 2].proj.y) * (p.proj.x - haut[haut.length - 2].proj.x)) <= 0) {
+          haut.pop();
+        }
+        haut.push(p);
+      }
+      bas.pop();
+      haut.pop();
+      return bas.concat(haut);
+    }
+
+    // --- Fonctions de dessin des formes ---
+    // (Les fonctions de dessin restent inchangées par rapport à l'original)
+    function dessinerPrisme(forme, ctx, origine, scale) {
+      const yBas = forme.bas;
+      const yHaut = forme.haut;
       const typeBase = forme.params.typeBase;
-      const h = parseFloat(forme.params.hauteur);
+      let ptsBas = [];
+
       if (typeBase === 'carre') {
         const c = parseFloat(forme.params.cote);
-        const base = c * c;
-        calc.lateral = 4 * c * h;
-        calc.total = 2 * base + calc.lateral;
-        calc.volume = base * h;
+        ptsBas = [
+          { x: -c/2, y: yBas, z: -c/2 },
+          { x: c/2, y: yBas, z: -c/2 },
+          { x: c/2, y: yBas, z: c/2 },
+          { x: -c/2, y: yBas, z: c/2 }
+        ];
       } else if (typeBase === 'rectangle') {
         const c1 = parseFloat(forme.params.largeur);
         const c2 = parseFloat(forme.params.profondeur);
-        const base = c1 * c2;
-        calc.lateral = 2 * (c1 + c2) * h;
-        calc.total = 2 * base + calc.lateral;
-        calc.volume = base * h;
+        ptsBas = [
+          { x: -c1/2, y: yBas, z: -c2/2 },
+          { x: c1/2, y: yBas, z: -c2/2 },
+          { x: c1/2, y: yBas, z: c2/2 },
+          { x: -c1/2, y: yBas, z: c2/2 }
+        ];
       } else if (typeBase === 'triangle') {
         const c = parseFloat(forme.params.cote);
-        const base = (Math.sqrt(3)/4) * c * c;
-        calc.lateral = 3 * c * h;
-        calc.total = 2 * base + calc.lateral;
-        calc.volume = base * h;
+        for (let i = 0; i < 3; i++) {
+          let angle = -Math.PI/2 + i * (2 * Math.PI/3);
+          ptsBas.push({ x: c * Math.cos(angle), y: yBas, z: c * Math.sin(angle) });
+        }
       } else if (typeBase === 'n-gone') {
         const n = parseInt(forme.params.n);
         const c = parseFloat(forme.params.cote);
-        const base = (n * c * c) / (4 * Math.tan(Math.PI/n));
-        calc.lateral = n * c * h;
-        calc.total = 2 * base + calc.lateral;
-        calc.volume = base * h;
+        const R = c / (2 * Math.sin(Math.PI / n));
+        for (let i = 0; i < n; i++) {
+          let angle = -Math.PI/2 + i * (2 * Math.PI/n);
+          ptsBas.push({ x: R * Math.cos(angle), y: yBas, z: R * Math.sin(angle) });
+        }
       } else if (typeBase === 'trapeze') {
         const b1 = parseFloat(forme.params.base1);
         const b2 = parseFloat(forme.params.base2);
         const tH = parseFloat(forme.params.hauteurTrapeze);
-        const base = ((b1 + b2) / 2) * tH;
-        const cote = Math.sqrt(((b2 - b1) / 2)**2 + tH * tH);
-        calc.lateral = (b1 + b2 + 2 * cote) * h;
-        calc.total = 2 * base + calc.lateral;
-        calc.volume = base * h;
+        ptsBas = [
+          { x: -b2/2, y: yBas, z: -tH/2 },
+          { x: b2/2, y: yBas, z: -tH/2 },
+          { x: b1/2, y: yBas, z: tH/2 },
+          { x: -b1/2, y: yBas, z: tH/2 }
+        ];
       }
-    } else if (forme.type === 'sphere') {
+
+      ctx.setLineDash([10, 10]);
+      ctx.beginPath();
+      ptsBas.forEach((pt, i) => {
+        let p = projeter(pt.x, pt.y, pt.z);
+        let X = origine.x + p.x * scale;
+        let Y = origine.y + p.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      });
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (typeBase === 'n-gone') {
+        const centreBase = { x: 0, y: yBas, z: 0 };
+        const milieuPremier = pointMilieu(ptsBas[0], ptsBas[1]);
+        dessinerLigneCote(ctx, origine, scale, centreBase, milieuPremier, "a");
+      }
+
+      const centreBas = { x: 0, y: yBas, z: 0 };
+      const centreHaut = { x: 0, y: yHaut, z: 0 };
+      dessinerLigneCote(ctx, origine, scale, centreBas, centreHaut, "h");
+
+      let arreteGauche = null;
+      ptsBas.forEach((pt, i) => {
+        let suivant = ptsBas[(i + 1) % ptsBas.length];
+        let milieu = pointMilieu(pt, suivant);
+        if (!arreteGauche || milieu.x < arreteGauche.milieu.x) {
+          arreteGauche = { milieu: milieu, pt1: pt, pt2: suivant };
+        }
+      });
+      dessinerLigneCote(ctx, origine, scale, arreteGauche.pt1, arreteGauche.pt2, "c");
+
+      const ptsHaut = ptsBas.map(pt => ({ x: pt.x, y: yHaut, z: pt.z }));
+      ctx.beginPath();
+      ptsHaut.forEach((pt, i) => {
+        let p = projeter(pt.x, pt.y, pt.z);
+        let X = origine.x + p.x * scale;
+        let Y = origine.y + p.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      });
+      ctx.closePath();
+      ctx.stroke();
+
+      let ptsEchantillon = [];
+      ptsBas.forEach(pt => {
+        ptsEchantillon.push({ world: pt, proj: projeter(pt.x, pt.y, pt.z) });
+      });
+      ptsHaut.forEach(pt => {
+        ptsEchantillon.push({ world: pt, proj: projeter(pt.x, pt.y, pt.z) });
+      });
+      let enveloppe = enveloppeConvexe(ptsEchantillon);
+      ctx.beginPath();
+      enveloppe.forEach((pt, i) => {
+        let X = origine.x + pt.proj.x * scale;
+        let Y = origine.y + pt.proj.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      });
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    function dessinerCone(forme, ctx, origine, scale) {
       const r = parseFloat(forme.params.rayon);
-      calc.total = 4 * Math.PI * r * r;
-      calc.lateral = calc.total;
-      calc.volume = (4/3) * Math.PI * r * r * r;
-    }
-    forme.calc = calc;
-  }
-
-  // --- Projection isométrique ---
-  function projeter(x, y, z) {
-    const angle = Math.PI / 6; // 30°
-    const isoX = (x - z) * Math.cos(angle);
-    const isoY = y + (x + z) * Math.sin(angle);
-    return { x: isoX, y: -isoY };
-  }
-
-  // --- Dessiner une ligne de cote (avec seulement une lettre) ---
-function dessinerLigneCote(ctx, origine, scale, pt1, pt2, etiquette) {
-  const p1 = projeter(pt1.x, pt1.y, pt1.z);
-  const p2 = projeter(pt2.x, pt2.y, pt2.z);
-  const x1 = origine.x + p1.x * scale;
-  const y1 = origine.y + p1.y * scale;
-  const x2 = origine.x + p2.x * scale;
-  const y2 = origine.y + p2.y * scale;
-  
-  ctx.save();
-  ctx.lineWidth = 1;
-  ctx.setLineDash([10, 10]);
-  ctx.strokeStyle = 'blue';
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  
-  // Calculer le point médian de la ligne
-  const midX = (x1 + x2) / 2;
-  const midY = (y1 + y2) / 2;
-  
-  // Calculer le vecteur directeur de la ligne
-  const vx = x2 - x1;
-  const vy = y2 - y1;
-  const length = Math.sqrt(vx * vx + vy * vy);
-  
-  // Calculer le vecteur normal pour obtenir la direction gauche (perpendiculaire)
-  // Dans un repère canvas (où y croît vers le bas), le vecteur gauche est (-vy, vx)
-  const nx = -vy / length;
-  const ny = vx / length;
-  
-  // Appliquer un décalage (ici 5 pixels) dans la direction du vecteur normal
-  const offset = 15;
-  const labelX = midX + nx * offset;
-  const labelY = midY + ny * offset;
-  
-  // Afficher l'étiquette
-  ctx.fillStyle = 'blue';
-  ctx.font = "15px sans-serif";
-  ctx.fillText(etiquette, labelX, labelY);
-  
-  ctx.restore();
-}
-
-  // --- Fonction utilitaire : calcul du point milieu (même y) ---
-  function pointMilieu(pt1, pt2) {
-    return {
-      x: (pt1.x + pt2.x) / 2,
-      y: pt1.y,
-      z: (pt1.z + pt2.z) / 2
-    };
-  }
-
-  // --- Calcul de l'enveloppe convexe (algorithme d'Andrew) ---
-  function enveloppeConvexe(points) {
-    let pts = points.slice();
-    pts.sort((a, b) => {
-      if (a.proj.x === b.proj.x) return a.proj.y - b.proj.y;
-      return a.proj.x - b.proj.x;
-    });
-    const bas = [];
-    for (let p of pts) {
-      while (bas.length >= 2 && ((bas[bas.length - 1].proj.x - bas[bas.length - 2].proj.x) * (p.proj.y - bas[bas.length - 2].proj.y) - (bas[bas.length - 1].proj.y - bas[bas.length - 2].proj.y) * (p.proj.x - bas[bas.length - 2].proj.x)) <= 0) {
-        bas.pop();
+      const yBas = forme.bas;
+      const yHaut = forme.haut;
+      const apex = { x: 0, y: yHaut, z: 0 };
+      const N_u = 20, N_t = 100;
+      let pointsEchantillon = [];
+      for (let i = 0; i < N_u; i++) {
+        let u = i / (N_u - 1);
+        for (let j = 0; j < N_t; j++) {
+          let t = (2 * Math.PI * j) / N_t;
+          let x = (1 - u) * apex.x + u * (r * Math.cos(t));
+          let y = (1 - u) * apex.y + u * yBas;
+          let z = (1 - u) * apex.z + u * (r * Math.sin(t));
+          pointsEchantillon.push({ world: { x, y, z }, proj: projeter(x, y, z) });
+        }
       }
-      bas.push(p);
+      ctx.save();
+      ctx.lineWidth = 3;
+      let enveloppe = enveloppeConvexe(pointsEchantillon);
+      ctx.beginPath();
+      enveloppe.forEach((pt, i) => {
+        let X = origine.x + pt.proj.x * scale;
+        let Y = origine.y + pt.proj.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      });
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+      dessinerEllipseBasePointillee(r, yBas, origine, scale);
+      let pA = projeter(apex.x, apex.y, apex.z);
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(origine.x + pA.x * scale, origine.y + pA.y * scale, 3, 0, 2 * Math.PI);
+      ctx.fill();
+      dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: r, y: yBas, z: 0 }, "r");
+      dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
+      const s = Math.sqrt(r * r + (yHaut - yBas) ** 2);
+      dessinerLigneCote(ctx, origine, scale, { x: r, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "g");
     }
-    const haut = [];
-    for (let i = pts.length - 1; i >= 0; i--) {
-      let p = pts[i];
-      while (haut.length >= 2 && ((haut[haut.length - 1].proj.x - haut[haut.length - 2].proj.x) * (p.proj.y - haut[haut.length - 2].proj.y) - (haut[haut.length - 1].proj.y - haut[haut.length - 2].proj.y) * (p.proj.x - haut[haut.length - 2].proj.x)) <= 0) {
-        haut.pop();
+
+    function dessinerEllipseBasePointillee(r, yBase, origine, scale) {
+      const N = 100;
+      let pts = [];
+      for (let i = 0; i <= N; i++) {
+        let t = 2 * Math.PI * i / N;
+        let x = r * Math.cos(t);
+        let z = r * Math.sin(t);
+        let p = projeter(x, yBase, z);
+        pts.push(p);
       }
-      haut.push(p);
+      ctx.setLineDash([10,10]);
+      ctx.beginPath();
+      pts.forEach((pt, i) => {
+        let X = origine.x + pt.x * scale;
+        let Y = origine.y + pt.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      });
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
-    bas.pop();
-    haut.pop();
-    return bas.concat(haut);
-  }
 
-  // --- Fonctions de dessin des formes ---
-  // Pour chaque fonction, les lignes de cote afficheront uniquement des lettres pour désigner les dimensions.
-  // Les lettres utilisées sont :
-  //    "h" pour la hauteur verticale,
-  //    "c" pour le côté (ou le rayon),
-  //    "a" pour l'apothème,
-  //    "g" pour la génératrice (côté incliné).
-
-  // Dessin du prisme
-  function dessinerPrisme(forme, ctx, origine, scale) {
-    const yBas = forme.bas;
-    const yHaut = forme.haut;
-    const typeBase = forme.params.typeBase;
-    let ptsBas = [];
-
-    if (typeBase === 'carre') {
-      const c = parseFloat(forme.params.cote);
-      ptsBas = [
-        { x: -c/2, y: yBas, z: -c/2 },
-        { x: c/2, y: yBas, z: -c/2 },
-        { x: c/2, y: yBas, z: c/2 },
-        { x: -c/2, y: yBas, z: c/2 }
-      ];
-    } else if (typeBase === 'rectangle') {
-      const c1 = parseFloat(forme.params.largeur);
-      const c2 = parseFloat(forme.params.profondeur);
-      ptsBas = [
-        { x: -c1/2, y: yBas, z: -c2/2 },
-        { x: c1/2, y: yBas, z: -c2/2 },
-        { x: c1/2, y: yBas, z: c2/2 },
-        { x: -c1/2, y: yBas, z: c2/2 }
-      ];
-    } else if (typeBase === 'triangle') {
-      const c = parseFloat(forme.params.cote);
-      for (let i = 0; i < 3; i++) {
-        let angle = -Math.PI/2 + i * (2 * Math.PI/3);
-        ptsBas.push({ x: c * Math.cos(angle), y: yBas, z: c * Math.sin(angle) });
+    function dessinerCylindre(forme, ctx, origine, scale) {
+      const r = parseFloat(forme.params.rayon);
+      const yBas = forme.bas;
+      const yHaut = forme.haut;
+      let pts = [];
+      for (let i = 0; i < 100; i++) {
+        let theta = (2 * Math.PI * i) / 100;
+        pts.push({
+          world: { x: r * Math.cos(theta), y: yBas, z: r * Math.sin(theta) },
+          proj: projeter(r * Math.cos(theta), yBas, r * Math.sin(theta))
+        });
       }
-    } else if (typeBase === 'n-gone') {
-      const n = parseInt(forme.params.n);
-      const c = parseFloat(forme.params.cote);
-      const R = c / (2 * Math.sin(Math.PI / n));
-      for (let i = 0; i < n; i++) {
-        let angle = -Math.PI/2 + i * (2 * Math.PI/n);
-        ptsBas.push({ x: R * Math.cos(angle), y: yBas, z: R * Math.sin(angle) });
+      for (let i = 0; i < 100; i++) {
+        let theta = (2 * Math.PI * i) / 100;
+        pts.push({
+          world: { x: r * Math.cos(theta), y: yHaut, z: r * Math.sin(theta) },
+          proj: projeter(r * Math.cos(theta), yHaut, r * Math.sin(theta))
+        });
       }
-    } else if (typeBase === 'trapeze') {
-      const b1 = parseFloat(forme.params.base1);
-      const b2 = parseFloat(forme.params.base2);
-      const tH = parseFloat(forme.params.hauteurTrapeze);
-      ptsBas = [
-        { x: -b2/2, y: yBas, z: -tH/2 },
-        { x: b2/2, y: yBas, z: -tH/2 },
-        { x: b1/2, y: yBas, z: tH/2 },
-        { x: -b1/2, y: yBas, z: tH/2 }
-      ];
-    }
-
-    // Dessiner le contour de la base (trait pointillé)
-    ctx.setLineDash([10, 10]);
-    ctx.beginPath();
-    ptsBas.forEach((pt, i) => {
-      let p = projeter(pt.x, pt.y, pt.z);
-      let X = origine.x + p.x * scale;
-      let Y = origine.y + p.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    });
-    ctx.closePath();
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Pour un n‑gone, dessiner l'apothème (étiquette "a")
-    if (typeBase === 'n-gone') {
-      const centreBase = { x: 0, y: yBas, z: 0 };
-      const milieuPremier = pointMilieu(ptsBas[0], ptsBas[1]);
-      dessinerLigneCote(ctx, origine, scale, centreBase, milieuPremier, "a");
-    }
-
-    // Ligne verticale (hauteur) : étiquette "h"
-    const centreBas = { x: 0, y: yBas, z: 0 };
-    const centreHaut = { x: 0, y: yHaut, z: 0 };
-    dessinerLigneCote(ctx, origine, scale, centreBas, centreHaut, "h");
-
-    // Côté de la base : on prend l'arête dont le milieu a la plus petite coordonnée x et on l'étiquette "c"
-    let arreteGauche = null;
-    ptsBas.forEach((pt, i) => {
-      let suivant = ptsBas[(i + 1) % ptsBas.length];
-      let milieu = pointMilieu(pt, suivant);
-      if (!arreteGauche || milieu.x < arreteGauche.milieu.x) {
-        arreteGauche = { milieu: milieu, pt1: pt, pt2: suivant };
+      let enveloppe = enveloppeConvexe(pts);
+      ctx.beginPath();
+      enveloppe.forEach((pt, i) => {
+        let X = origine.x + pt.proj.x * scale;
+        let Y = origine.y + pt.proj.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      });
+      ctx.closePath();
+      ctx.stroke();
+      dessinerEllipseBasePointillee(r, yBas, origine, scale);
+      const N = 100;
+      ctx.beginPath();
+      for (let i = 0; i <= N; i++) {
+        let t = 2 * Math.PI * i / N;
+        let x = r * Math.cos(t);
+        let z = r * Math.sin(t);
+        let p = projeter(x, yHaut, z);
+        let X = origine.x + p.x * scale;
+        let Y = origine.y + p.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
       }
-    });
-    dessinerLigneCote(ctx, origine, scale, arreteGauche.pt1, arreteGauche.pt2, "c");
+      ctx.closePath();
+      ctx.stroke();
+      dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: r, y: yBas, z: 0 }, "r");
+      dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
+    }
 
-    // Dessiner le contour de la face supérieure (solide)
-    const ptsHaut = ptsBas.map(pt => ({ x: pt.x, y: yHaut, z: pt.z }));
-    ctx.beginPath();
-    ptsHaut.forEach((pt, i) => {
-      let p = projeter(pt.x, pt.y, pt.z);
-      let X = origine.x + p.x * scale;
-      let Y = origine.y + p.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    });
-    ctx.closePath();
-    ctx.stroke();
+    function dessinerPyramide(forme, ctx, origine, scale) {
+      const yBas = forme.bas;
+      const yHaut = forme.haut;
+      const typeBase = forme.params.typeBase;
+      let ptsBase = [];
 
-    // Optionnel : dessiner l'enveloppe globale du prisme
-    let ptsEchantillon = [];
-    ptsBas.forEach(pt => {
-      ptsEchantillon.push({ world: pt, proj: projeter(pt.x, pt.y, pt.z) });
-    });
-    ptsHaut.forEach(pt => {
-      ptsEchantillon.push({ world: pt, proj: projeter(pt.x, pt.y, pt.z) });
-    });
-    let enveloppe = enveloppeConvexe(ptsEchantillon);
-    ctx.beginPath();
-    enveloppe.forEach((pt, i) => {
-      let X = origine.x + pt.proj.x * scale;
-      let Y = origine.y + pt.proj.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    });
-    ctx.closePath();
-    ctx.stroke();
-  }
-
-  // Dessin du cône
-  function dessinerCone(forme, ctx, origine, scale) {
-    const r = parseFloat(forme.params.rayon);
-    const yBas = forme.bas;
-    const yHaut = forme.haut;
-    const apex = { x: 0, y: yHaut, z: 0 };
-    const N_u = 20, N_t = 100;
-    let pointsEchantillon = [];
-    for (let i = 0; i < N_u; i++) {
-      let u = i / (N_u - 1);
-      for (let j = 0; j < N_t; j++) {
-        let t = (2 * Math.PI * j) / N_t;
-        let x = (1 - u) * apex.x + u * (r * Math.cos(t));
-        let y = (1 - u) * apex.y + u * yBas;
-        let z = (1 - u) * apex.z + u * (r * Math.sin(t));
-        pointsEchantillon.push({ world: { x, y, z }, proj: projeter(x, y, z) });
+      if (typeBase === 'carre') {
+        const c = parseFloat(forme.params.cote);
+        ptsBase = [
+          { x: -c/2, y: yBas, z: -c/2 },
+          { x: c/2, y: yBas, z: -c/2 },
+          { x: c/2, y: yBas, z: c/2 },
+          { x: -c/2, y: yBas, z: c/2 }
+        ];
+      } else if (typeBase === 'rectangle') {
+        const c1 = parseFloat(forme.params.largeur);
+        const c2 = parseFloat(forme.params.profondeur);
+        ptsBase = [
+          { x: -c1/2, y: yBas, z: -c2/2 },
+          { x: c1/2, y: yBas, z: -c2/2 },
+          { x: c1/2, y: yBas, z: c2/2 },
+          { x: -c1/2, y: yBas, z: c2/2 }
+        ];
+      } else if (typeBase === 'triangle') {
+        const c = parseFloat(forme.params.cote);
+        for (let i = 0; i < 3; i++) {
+          let angle = -Math.PI/2 + i * (2 * Math.PI/3);
+          ptsBase.push({ x: c * Math.cos(angle), y: yBas, z: c * Math.sin(angle) });
+        }
+      } else if (typeBase === 'n-gone') {
+        const n = parseInt(forme.params.n);
+        const c = parseFloat(forme.params.cote);
+        const R = c / (2 * Math.sin(Math.PI/n));
+        for (let i = 0; i < n; i++) {
+          let angle = -Math.PI/2 + i * (2 * Math.PI/n);
+          ptsBase.push({ x: R * Math.cos(angle), y: yBas, z: R * Math.sin(angle) });
+        }
       }
-    }
-    // Dessiner la silhouette latérale (avec une ligne plus épaisse)
-    ctx.save();
-    ctx.lineWidth = 3;
-    let enveloppe = enveloppeConvexe(pointsEchantillon);
-    ctx.beginPath();
-    enveloppe.forEach((pt, i) => {
-      let X = origine.x + pt.proj.x * scale;
-      let Y = origine.y + pt.proj.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    });
-    ctx.closePath();
-    ctx.stroke();
-    ctx.restore();
-    // Dessiner la base complète en trait pointillé (ellipse)
-    dessinerEllipseBasePointillee(r, yBas, origine, scale);
-    // Marquer l'apex par un petit cercle rouge
-    let pA = projeter(apex.x, apex.y, apex.z);
-    ctx.fillStyle = 'red';
-    ctx.beginPath();
-    ctx.arc(origine.x + pA.x * scale, origine.y + pA.y * scale, 3, 0, 2 * Math.PI);
-    ctx.fill();
-    // Lignes de cote : rayon (étiquette "r"), hauteur (étiquette "h") et génératrice (étiquette "g")
-    dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: r, y: yBas, z: 0 }, "r");
-    dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
-    const s = Math.sqrt(r * r + (yHaut - yBas) ** 2);
-    dessinerLigneCote(ctx, origine, scale, { x: r, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "g");
-  }
 
-  // Fonction pour dessiner une ellipse (base) en trait pointillé
-  function dessinerEllipseBasePointillee(r, yBase, origine, scale) {
-    const N = 100;
-    let pts = [];
-    for (let i = 0; i <= N; i++) {
-      let t = 2 * Math.PI * i / N;
-      let x = r * Math.cos(t);
-      let z = r * Math.sin(t);
-      let p = projeter(x, yBase, z);
-      pts.push(p);
-    }
-    ctx.setLineDash([10,10]);
-    ctx.beginPath();
-    pts.forEach((pt, i) => {
-      let X = origine.x + pt.x * scale;
-      let Y = origine.y + pt.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    });
-    ctx.closePath();
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
+      let ptsEchantillon = [];
+      ptsBase.forEach(pt => {
+        ptsEchantillon.push({ world: pt, proj: projeter(pt.x, pt.y, pt.z) });
+      });
+      ptsEchantillon.push({ world: { x: 0, y: yHaut, z: 0 }, proj: projeter(0, yHaut, 0) });
+      let enveloppe = enveloppeConvexe(ptsEchantillon);
+      ctx.beginPath();
+      enveloppe.forEach((pt, i) => {
+        let X = origine.x + pt.proj.x * scale;
+        let Y = origine.y + pt.proj.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      });
+      ctx.closePath();
+      ctx.stroke();
 
-  // Dessin du cylindre
-  function dessinerCylindre(forme, ctx, origine, scale) {
-    const r = parseFloat(forme.params.rayon);
-    const yBas = forme.bas;
-    const yHaut = forme.haut;
-    let pts = [];
-    // Points de la base inférieure
-    for (let i = 0; i < 100; i++) {
-      let theta = (2 * Math.PI * i) / 100;
-      pts.push({
-        world: { x: r * Math.cos(theta), y: yBas, z: r * Math.sin(theta) },
-        proj: projeter(r * Math.cos(theta), yBas, r * Math.sin(theta))
+      ctx.setLineDash([10, 10]);
+      ctx.beginPath();
+      ptsBase.forEach((pt, i) => {
+        let p = projeter(pt.x, pt.y, pt.z);
+        let X = origine.x + p.x * scale;
+        let Y = origine.y + p.y * scale;
+        if (i === 0) ctx.moveTo(X, Y);
+        else ctx.lineTo(X, Y);
+      });
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (typeBase === 'n-gone') {
+        const centre = { x: 0, y: yBas, z: 0 };
+        const milieuPremier = pointMilieu(ptsBase[0], ptsBase[1]);
+        dessinerLigneCote(ctx, origine, scale, centre, milieuPremier, "a");
+      }
+      dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
+
+      let arreteAvant = null;
+      ptsBase.forEach((pt, i) => {
+        let suivant = ptsBase[(i+1) % ptsBase.length];
+        let milieu = pointMilieu(pt, suivant);
+        if (!arreteAvant || milieu.z < arreteAvant.milieu.z) {
+          arreteAvant = { milieu: milieu, pt1: pt, pt2: suivant };
+        }
+      });
+      dessinerLigneCote(ctx, origine, scale, arreteAvant.milieu, { x: 0, y: yHaut, z: 0 }, "g");
+      let arreteGauche = null;
+      ptsBase.forEach((pt, i) => {
+        let suivant = ptsBase[(i+1) % ptsBase.length];
+        let milieu = pointMilieu(pt, suivant);
+        if (!arreteGauche || milieu.x < arreteGauche.milieu.x) {
+          arreteGauche = { milieu: milieu, pt1: pt, pt2: suivant };
+        }
+      });
+      dessinerLigneCote(ctx, origine, scale, arreteGauche.pt1, arreteGauche.pt2, "c");
+    }
+
+    function dessinerSphere(forme, ctx, origine, scale) {
+      const r = parseFloat(forme.params.rayon);
+      const yBas = forme.bas;
+      const yHaut = forme.haut;
+      const centreY = yBas + r;
+      const centreP = projeter(0, centreY, 0);
+      const cx = origine.x + centreP.x * scale;
+      const cy = origine.y + centreP.y * scale;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * scale, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.setLineDash([10, 10]);
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r * scale, r * scale * 0.5, 0, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      dessinerLigneCote(ctx, origine, scale, { x: 0, y: centreY, z: 0 }, { x: r/Math.sqrt(3), y: centreY, z: -r/Math.sqrt(3) }, "r");
+    }
+
+    // --- Dessiner la scène ---
+    function dessinerScene() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const origine = { x: canvas.width / 2 + offsetX, y: canvas.height / 2 + 100 + offsetY };
+      const scale = zoomActuel;
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      formes.forEach(forme => {
+        switch(forme.type) {
+          case 'cone': dessinerCone(forme, ctx, origine, scale); break;
+          case 'cylindre': dessinerCylindre(forme, ctx, origine, scale); break;
+          case 'pyramide': dessinerPyramide(forme, ctx, origine, scale); break;
+          case 'prisme': dessinerPrisme(forme, ctx, origine, scale); break;
+          case 'sphere': dessinerSphere(forme, ctx, origine, scale); break;
+        }
       });
     }
-    // Points de la base supérieure
-    for (let i = 0; i < 100; i++) {
-      let theta = (2 * Math.PI * i) / 100;
-      pts.push({
-        world: { x: r * Math.cos(theta), y: yHaut, z: r * Math.sin(theta) },
-        proj: projeter(r * Math.cos(theta), yHaut, r * Math.sin(theta))
-      });
-    }
-    let enveloppe = enveloppeConvexe(pts);
-    ctx.beginPath();
-    enveloppe.forEach((pt, i) => {
-      let X = origine.x + pt.proj.x * scale;
-      let Y = origine.y + pt.proj.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    });
-    ctx.closePath();
-    ctx.stroke();
-    dessinerEllipseBasePointillee(r, yBas, origine, scale);
-    // Dessiner l'ellipse de la base supérieure en trait solide
-    const N = 100;
-    ctx.beginPath();
-    for (let i = 0; i <= N; i++) {
-      let t = 2 * Math.PI * i / N;
-      let x = r * Math.cos(t);
-      let z = r * Math.sin(t);
-      let p = projeter(x, yHaut, z);
-      let X = origine.x + p.x * scale;
-      let Y = origine.y + p.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    }
-    ctx.closePath();
-    ctx.stroke();
-    // Lignes de cote : rayon ("") et hauteur ("h")
-    dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: r, y: yBas, z: 0 }, "r");
-    dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
-  }
 
-  // Dessin de la pyramide
-  function dessinerPyramide(forme, ctx, origine, scale) {
-    const yBas = forme.bas;
-    const yHaut = forme.haut;
-    const typeBase = forme.params.typeBase;
-    let ptsBase = [];
+    dessinerScene();
+    mettreAJourListeFormes();
 
-    if (typeBase === 'carre') {
-      const c = parseFloat(forme.params.cote);
-      ptsBase = [
-        { x: -c/2, y: yBas, z: -c/2 },
-        { x: c/2, y: yBas, z: -c/2 },
-        { x: c/2, y: yBas, z: c/2 },
-        { x: -c/2, y: yBas, z: c/2 }
-      ];
-    } else if (typeBase === 'rectangle') {
-      const c1 = parseFloat(forme.params.largeur);
-      const c2 = parseFloat(forme.params.profondeur);
-      ptsBase = [
-        { x: -c1/2, y: yBas, z: -c2/2 },
-        { x: c1/2, y: yBas, z: -c2/2 },
-        { x: c1/2, y: yBas, z: c2/2 },
-        { x: -c1/2, y: yBas, z: c2/2 }
-      ];
-    } else if (typeBase === 'triangle') {
-      const c = parseFloat(forme.params.cote);
-      for (let i = 0; i < 3; i++) {
-        let angle = -Math.PI/2 + i * (2 * Math.PI/3);
-        ptsBase.push({ x: c * Math.cos(angle), y: yBas, z: c * Math.sin(angle) });
-      }
-    } else if (typeBase === 'n-gone') {
-      const n = parseInt(forme.params.n);
-      const c = parseFloat(forme.params.cote);
-      const R = c / (2 * Math.sin(Math.PI/n));
-      for (let i = 0; i < n; i++) {
-        let angle = -Math.PI/2 + i * (2 * Math.PI/n);
-        ptsBase.push({ x: R * Math.cos(angle), y: yBas, z: R * Math.sin(angle) });
-      }
-    }
-
-    // Dessiner la silhouette latérale (base + apex)
-    let ptsEchantillon = [];
-    ptsBase.forEach(pt => {
-      ptsEchantillon.push({ world: pt, proj: projeter(pt.x, pt.y, pt.z) });
-    });
-    ptsEchantillon.push({ world: { x: 0, y: yHaut, z: 0 }, proj: projeter(0, yHaut, 0) });
-    let enveloppe = enveloppeConvexe(ptsEchantillon);
-    ctx.beginPath();
-    enveloppe.forEach((pt, i) => {
-      let X = origine.x + pt.proj.x * scale;
-      let Y = origine.y + pt.proj.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    });
-    ctx.closePath();
-    ctx.stroke();
-
-    // Dessiner la base en trait pointillé
-    ctx.setLineDash([10, 10]);
-    ctx.beginPath();
-    ptsBase.forEach((pt, i) => {
-      let p = projeter(pt.x, pt.y, pt.z);
-      let X = origine.x + p.x * scale;
-      let Y = origine.y + p.y * scale;
-      if (i === 0) ctx.moveTo(X, Y);
-      else ctx.lineTo(X, Y);
-    });
-    ctx.closePath();
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Si la base est un n‑gone, tracer l'apothème (étiquette "a")
-    if (typeBase === 'n-gone') {
-      const centre = { x: 0, y: yBas, z: 0 };
-      const milieuPremier = pointMilieu(ptsBase[0], ptsBase[1]);
-      dessinerLigneCote(ctx, origine, scale, centre, milieuPremier, "a");
-    }
-    // Ligne verticale : "h"
-    dessinerLigneCote(ctx, origine, scale, { x: 0, y: yBas, z: 0 }, { x: 0, y: yHaut, z: 0 }, "h");
-    // Ligne inclinée (génératrice) : "g"
-    // On choisit l'arête avant (celle dont le milieu a la plus petite coordonnée z)
-    let arreteAvant = null;
-    ptsBase.forEach((pt, i) => {
-      let suivant = ptsBase[(i+1) % ptsBase.length];
-      let milieu = pointMilieu(pt, suivant);
-      if (!arreteAvant || milieu.z < arreteAvant.milieu.z) {
-        arreteAvant = { milieu: milieu, pt1: pt, pt2: suivant };
-      }
-    });
-    dessinerLigneCote(ctx, origine, scale, arreteAvant.milieu, { x: 0, y: yHaut, z: 0 }, "g");
-    // Arête de la base : "c"
-    let arreteGauche = null;
-    ptsBase.forEach((pt, i) => {
-      let suivant = ptsBase[(i+1) % ptsBase.length];
-      let milieu = pointMilieu(pt, suivant);
-      if (!arreteGauche || milieu.x < arreteGauche.milieu.x) {
-        arreteGauche = { milieu: milieu, pt1: pt, pt2: suivant };
-      }
-    });
-    dessinerLigneCote(ctx, origine, scale, arreteGauche.pt1, arreteGauche.pt2, "c");
-  }
-
-  // Dessin de la sphère
-  function dessinerSphere(forme, ctx, origine, scale) {
-    const r = parseFloat(forme.params.rayon);
-    const yBas = forme.bas;
-    const yHaut = forme.haut;
-    // Calculer le centre de la sphère
-    const centreY = yBas + r;
-    const centreP = projeter(0, centreY, 0);
-    const cx = origine.x + centreP.x * scale;
-    const cy = origine.y + centreP.y * scale;
-    ctx.lineWidth = 2;
-    // Dessiner le contour extérieur (cercle solide)
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * scale, 0, 2 * Math.PI);
-    ctx.stroke();
-    // Dessiner l'équateur (ellipse pointillée)
-    ctx.setLineDash([10, 10]);
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, r * scale, r * scale * 0.5, 0, 0, 2 * Math.PI);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    // Ligne de cote pour le rayon (étiquette "r")
-    dessinerLigneCote(ctx, origine, scale, { x: 0, y: centreY, z: 0 }, { x: r/Math.sqrt(3), y: centreY, z: -r/Math.sqrt(3) }, "r");
-  }
-
-  // --- Dessiner la scène ---
-  function dessinerScene() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // L'origine tient compte du zoom et du décalage de panoramique
-    const origine = { x: canvas.width / 2 + offsetX, y: canvas.height / 2 + 100 + offsetY };
-    const scale = zoomActuel;
-    ctx.lineWidth = 2;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    formes.forEach(forme => {
-      switch(forme.type) {
-        case 'cone': dessinerCone(forme, ctx, origine, scale); break;
-        case 'cylindre': dessinerCylindre(forme, ctx, origine, scale); break;
-        case 'pyramide': dessinerPyramide(forme, ctx, origine, scale); break;
-        case 'prisme': dessinerPrisme(forme, ctx, origine, scale); break;
-        case 'sphere': dessinerSphere(forme, ctx, origine, scale); break;
-      }
-    });
-  }
-
-  dessinerScene();
-  mettreAJourListeFormes();
-
-  function mettreAJourListeFormes() {
-    let html = "<h3>Formes Empilées</h3>";
-    formes.forEach((forme, index) => {
-      html += `<div class="item-forme">
+    // --- Mise à jour de la liste des formes ---
+    function mettreAJourListeFormes() {
+      let html = "<h3>Formes Empilées</h3>";
+      formes.forEach((forme, index) => {
+        html += `
+      <div class="item-forme">
         <span class="btn-supprimer" onclick="supprimerForme(${index})">[x]</span>
-        <strong>${index+1}. ${forme.type.toUpperCase()}</strong><br>
-        Unité : ${forme.unite}<br>`;
-      for (let key in forme.params) {
-        html += `${key} : ${forme.params[key]}<br>`;
-      }
-      html += `Bas : ${forme.bas.toFixed(2)} ${forme.unite}, Haut : ${forme.haut.toFixed(2)} ${forme.unite}<br>
-        Aire Latérale : ${forme.calc.lateral.toFixed(2)} ${forme.unite}²<br>
-        Aire Totale : ${forme.calc.total.toFixed(2)} ${forme.unite}²<br>
-        Volume : ${forme.calc.volume.toFixed(2)} ${forme.unite}³<br>
+        <strong>${index + 1}. ${forme.type.toUpperCase()}</strong>
+        <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
+          <tr>
+            <td><strong>Unité :</strong></td>
+            <td>${forme.unite}</td>
+          </tr>`;
+        // Affichage des paramètres (hors typeBase)
+        for (let key in forme.params) {
+          if (key === "typeBase") continue;
+          let label = key;
+          let value = forme.params[key];
+          if (key === "n") {
+            label = "Nombre de côtés";
+            value = parseInt(value);
+          }
+          html += `
+          <tr>
+            <td><strong>${label} :</strong></td>
+            <td>${value} ${forme.unite}</td>
+          </tr>`;
+        }
+
+        // Affichage de la génératrice et de l'apothème dès maintenant
+        if(forme.calc.generatrice !== undefined) {
+          html += `
+          <tr>
+            <td><strong>Génératrice :</strong></td>
+            <td>${forme.calc.generatrice.toFixed(3)} ${forme.unite}</td>
+          </tr>`;
+        }
+        if(forme.calc.apotheme !== undefined) {
+          html += `
+          <tr>
+            <td><strong>Apothème de la base :</strong></td>
+            <td>${forme.calc.apotheme.toFixed(3)} ${forme.unite}</td>
+          </tr>`;
+        }
+
+        // Affichage des autres propriétés calculées
+        html += `
+          <tr>
+            <td><strong>Périmètre de la base :</strong></td>
+            <td>${(forme.calc.perimetreBase !== undefined ? forme.calc.perimetreBase.toFixed(3) : "-")} ${forme.unite}</td>
+          </tr>
+          <tr>
+            <td><strong>Aire de la Base :</strong></td>
+            <td>${(forme.calc.total - forme.calc.lateral).toFixed(3)} ${forme.unite}²</td>
+          </tr>
+          <tr>
+            <td><strong>Aire Latérale :</strong></td>
+            <td>${forme.calc.lateral.toFixed(3)} ${forme.unite}²</td>
+          </tr>
+          <tr>
+            <td><strong>Aire Totale :</strong></td>
+            <td>${forme.calc.total.toFixed(3)} ${forme.unite}²</td>
+          </tr>
+          <tr>
+            <td><strong>Volume :</strong></td>
+            <td>${forme.calc.volume.toFixed(3)} ${forme.unite}³</td>
+          </tr>
+        </table>
         <div class="controles-forme">
           <button onclick="deplacerForme(${index}, 'bas')">Bas</button>
           <button onclick="deplacerForme(${index}, 'haut')">Haut</button>
           <button onclick="editerForme(${index})">Éditer</button>
         </div>
       </div>`;
+      });
+      listeFormesDiv.innerHTML = html;
+    }
+
+    // --- Gestion du zoom via l'entrée ---
+    zoomInput.addEventListener('change', function() {
+      zoomActuel = parseFloat(zoomInput.value);
+      dessinerScene();
     });
-    listeFormesDiv.innerHTML = html;
-  }
 
-  // --- Gestion du zoom via l'entrée ---
-  zoomInput.addEventListener('change', function() {
-    zoomActuel = parseFloat(zoomInput.value);
-    dessinerScene();
-  });
-
-  // --- Gestion du panoramique sur le canvas ---
-  canvas.addEventListener('mousedown', function(e) {
-    estEnPanoramique = true;
-    dernierX = e.clientX;
-    dernierY = e.clientY;
-    canvas.style.cursor = "grabbing";
-  });
-  canvas.addEventListener('mousemove', function(e) {
-    if (estEnPanoramique) {
-      offsetX += e.clientX - dernierX;
-      offsetY += e.clientY - dernierY;
+    // --- Gestion du panoramique sur le canvas ---
+    canvas.addEventListener('mousedown', function(e) {
+      estEnPanoramique = true;
       dernierX = e.clientX;
       dernierY = e.clientY;
-      dessinerScene();
-    }
-  });
-  canvas.addEventListener('mouseup', function() {
-    estEnPanoramique = false;
-    canvas.style.cursor = "grab";
-  });
-  canvas.addEventListener('mouseleave', function() {
-    estEnPanoramique = false;
-    canvas.style.cursor = "grab";
-  });
+      canvas.style.cursor = "grabbing";
+    });
+    canvas.addEventListener('mousemove', function(e) {
+      if (estEnPanoramique) {
+        offsetX += e.clientX - dernierX;
+        offsetY += e.clientY - dernierY;
+        dernierX = e.clientX;
+        dernierY = e.clientY;
+        dessinerScene();
+      }
+    });
+    canvas.addEventListener('mouseup', function() {
+      estEnPanoramique = false;
+      canvas.style.cursor = "grab";
+    });
+    canvas.addEventListener('mouseleave', function() {
+      estEnPanoramique = false;
+      canvas.style.cursor = "grab";
+    });
 
-});
+  });
 </script>
 </body>
 </html>
