@@ -159,7 +159,7 @@
       if (h > 2 && validThousandths(h) && sh > 2 &&
           validThousandths(sh) && (h / sh > 0.3) &&
           (sh / h > 0.3) && (c / h > 0.3) && (h / c > 0.3)) {
-        output += `Pyramide carrée -- Arête: ${c.toFixed(2)}   Hauteur: ${h.toFixed(2)}   Apotheme: ${sh.toFixed(2)}   Aire base: ${(c*c).toFixed(2)}   Aire laterale: ${A_laterale.toFixed(2)}   Aire totale: ${(A_laterale + c*c).toFixed(2)} u²\n`;
+        output += `Pyramide carrée -- Arête: ${c.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${sh.toFixed(3)}   Aire base: ${(c*c).toFixed(3)}   Aire laterale: ${A_laterale.toFixed(3)}   Aire totale: ${(A_laterale + c*c).toFixed(3)} u²\n`;
       }
     }
 
@@ -204,7 +204,7 @@
       const r_val = r;
       const h = volume / (Math.PI * r_val * r_val);
       if (h > 0 && validThousandths(h))
-        output += `Cylindre -- Rayon: ${r_val.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+        output += `Cylindre -- Rayon: ${r_val.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(3)} u³\n`;
     }
 
     // --- CUBE ---
