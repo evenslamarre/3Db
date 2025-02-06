@@ -104,14 +104,14 @@
       return;
     }
 
-    output += "MODE AUTOMATIQUE\n\n";
+    output += "--- MESURES POSSIBLES ---\n\n";
 
     // --- CÔNE ---
-    output += "--- CÔNE POSSIBLE ---\n";
+    output += "--- CÔNE ---\n";
     for (let r = 1.0; r <= Math.sqrt(aire); r += 0.01) {
       const dims = tryConeDimensions_Aire(aire, r);
       if (dims) {
-        output += `Cône -- Rayon: ${dims.r.toFixed(1)}   Hauteur: ${dims.h.toFixed(2)}   Génératrice: ${dims.g.toFixed(3)}   Aire: ${aire.toFixed(2)} u²\n`;
+        output += `Cône -- Rayon: ${dims.r.toFixed(2)}   Hauteur: ${dims.h.toFixed(3)}   Génératrice: ${dims.g.toFixed(3)}   Aire: ${aire.toFixed(2)} u²\n`;
       }
     }
 
@@ -122,7 +122,7 @@
     output += `Rayon de la sphère: ${sphere_r.toFixed(4)}\n`;
 
     // --- CYLINDRE ---
-    output += "\n--- CYLINDRE POSSIBLE ---\n";
+    output += "\n--- CYLINDRE ---\n";
     // Aire totale = 2πr² + 2πr*h  =>  h = (aire - 2πr²)/(2πr)
     for (let r = 1.0; r <= Math.sqrt(aire); r += 0.1) {
       const r_val = r;
@@ -179,10 +179,10 @@
       return;
     }
 
-    output += "MODE AUTOMATIQUE\n\n";
+    output += "--- MESURES POSSIBLES ---\n\n";
 
     // --- CÔNE ---
-    output += "--- CÔNE POSSIBLE ---\n";
+    output += "--- CÔNE ---\n";
     // Volume d'un cône = (1/3)*π*r²*h  =>  h = 3*volume/(π*r²)
     for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
       const dims = tryConeDimensions_Volume(volume, r);
@@ -198,7 +198,7 @@
     output += `Rayon de la sphère: ${sphere_r.toFixed(4)}\n`;
 
     // --- CYLINDRE ---
-    output += "\n--- CYLINDRE POSSIBLE ---\n";
+    output += "\n--- CYLINDRE ---\n";
     // Volume = π*r²*h  =>  h = volume/(π*r²)
     for (let r = 0.5; r <= Math.cbrt(volume); r += 0.1) {
       const r_val = r;
