@@ -128,7 +128,7 @@
       const r_val = r;
       const h = (aire - (2.0 * Math.PI * r_val * r_val)) / (2.0 * Math.PI * r_val);
       if (h > 0 && validThousandths(h))
-        output += `Cylindre -- Rayon: ${r_val.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Aire: ${aire.toFixed(2)} u²\n`;
+        output += `Cylindre -- Rayon: ${r_val.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Aire: ${aire.toFixed(2)} u²\n`;
     }
 
     // --- CUBE ---
@@ -149,6 +149,32 @@
       }
     }
 
+    // --- PRISME À BASE PENTAGONALE ---
+    output += "\n--- PRISME À BASE PENTAGONALE ---\n";
+    // Pour un pentagone régulier : Aire_base = (5*a²)/(4*tan(π/5)) et Périmètre = 5*a.
+    // Aire totale = 2*Aire_base + 5*a*h  =>  h = (aire - 2*Aire_base)/(5*a)
+    const aMaxPentAire = Math.sqrt((4 * Math.tan(Math.PI/5) * aire) / 5);
+    for (let a = 1.0; a <= aMaxPentAire; a += 0.01) {
+      const A_base = (5 * a * a) / (4 * Math.tan(Math.PI/5));
+      const h = (aire - 2 * A_base) / (5 * a);
+      if (h > 0 && validThousandths(h) && (h / a >= 0.30 && h / a <= 3.33)) {
+        output += `Prisme base pentagonale -- Arête base: ${a.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Aire base: ${A_base.toFixed(3)}   Aire totale: ${aire.toFixed(2)} u²\n`;
+      }
+    }
+
+    // --- PRISME À BASE HEXAGONALE ---
+    output += "\n--- PRISME À BASE HEXAGONALE ---\n";
+    // Pour un hexagone régulier : Aire_base = (6*a²)/(4*tan(π/6)) et Périmètre = 6*a.
+    // Aire totale = 2*Aire_base + 6*a*h  =>  h = (aire - 2*Aire_base)/(6*a)
+    const aMaxHexAire = Math.sqrt((4 * Math.tan(Math.PI/6) * aire) / 6);
+    for (let a = 1.0; a <= aMaxHexAire; a += 0.01) {
+      const A_base = (6 * a * a) / (4 * Math.tan(Math.PI/6));
+      const h = (aire - 2 * A_base) / (6 * a);
+      if (h > 0 && validThousandths(h) && (h / a >= 0.30 && h / a <= 3.33)) {
+        output += `Prisme base hexagonale -- Arête base: ${a.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Aire base: ${A_base.toFixed(3)}   Aire totale: ${aire.toFixed(2)} u²\n`;
+      }
+    }
+
     // --- PYRAMIDE À BASE CARRÉE ---
     output += "\n--- PYRAMIDE À BASE CARRÉE ---\n";
     for (let c = 1.0; c <= Math.sqrt(aire); c += 0.01) {
@@ -160,6 +186,47 @@
           validThousandths(sh) && (h / sh > 0.3) &&
           (sh / h > 0.3) && (c / h > 0.3) && (h / c > 0.3)) {
         output += `Pyramide carrée -- Arête: ${c.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${sh.toFixed(3)}   Aire base: ${(c*c).toFixed(3)}   Aire laterale: ${A_laterale.toFixed(3)}   Aire totale: ${(A_laterale + c*c).toFixed(3)} u²\n`;
+      }
+    }
+
+    // --- PYRAMIDE À BASE PENTAGONALE ---
+    output += "\n--- PYRAMIDE À BASE PENTAGONALE ---\n";
+    // Pour un pentagone régulier : Aire_base = (5*a²)/(4*tan(π/5)) et Périmètre = 5*a.
+    // L'aire latérale = aire - Aire_base, et pour chaque face : Aire_triangle = (a*l)/2.
+    // On déduit l'apothème l = (2*(aire - Aire_base))/(5*a)
+    // L'hauteur h se calcule via h = sqrt(l² - R²) avec R = a/(2*tan(π/5))
+    const aMaxPentAirePyr = Math.sqrt((4 * Math.tan(Math.PI/5) * aire) / 5);
+    for (let a = 1.0; a <= aMaxPentAirePyr; a += 0.01) {
+      const A_base = (5 * a * a) / (4 * Math.tan(Math.PI/5));
+      if (A_base >= aire) continue;
+      const A_laterale = aire - A_base;
+      const l = (2 * A_laterale) / (5 * a);
+      if (l <= 0) continue;
+      const R = a / (2 * Math.tan(Math.PI/5));
+      const h = Math.sqrt(l * l - R * R);
+      if (h > 2 && validThousandths(h) && l > 2 && validThousandths(l) &&
+          (h / l > 0.3) && (l / h > 0.3) && (a / h > 0.3) && (h / a > 0.3)) {
+        output += `Pyramide pentagonale -- Arête: ${a.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${l.toFixed(3)}   Aire base: ${A_base.toFixed(3)}   Aire laterale: ${A_laterale.toFixed(3)}   Aire totale: ${aire.toFixed(3)} u²\n`;
+      }
+    }
+
+    // --- PYRAMIDE À BASE HEXAGONALE ---
+    output += "\n--- PYRAMIDE À BASE HEXAGONALE ---\n";
+    // Pour un hexagone régulier : Aire_base = (6*a²)/(4*tan(π/6)) et Périmètre = 6*a.
+    // L'aire latérale = aire - Aire_base, et l'apothème l = (aire - Aire_base)/(3*a)
+    // Avec R = a/(2*tan(π/6)) et h = sqrt(l² - R²)
+    const aMaxHexAirePyr = Math.sqrt((4 * Math.tan(Math.PI/6) * aire) / 6);
+    for (let a = 1.0; a <= aMaxHexAirePyr; a += 0.01) {
+      const A_base = (6 * a * a) / (4 * Math.tan(Math.PI/6));
+      if (A_base >= aire) continue;
+      const A_laterale = aire - A_base;
+      const l = A_laterale / (3 * a);
+      if (l <= 0) continue;
+      const R = a / (2 * Math.tan(Math.PI/6));
+      const h = Math.sqrt(l * l - R * R);
+      if (h > 2 && validThousandths(h) && l > 2 && validThousandths(l) &&
+          (h / l > 0.3) && (l / h > 0.3) && (a / h > 0.3) && (h / a > 0.3)) {
+        output += `Pyramide hexagonale -- Arête: ${a.toFixed(2)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${l.toFixed(3)}   Aire base: ${A_base.toFixed(3)}   Aire laterale: ${A_laterale.toFixed(3)}   Aire totale: ${aire.toFixed(3)} u²\n`;
       }
     }
 
@@ -215,22 +282,76 @@
 
     // --- PRISME À BASE CARRÉE ---
     output += "\n--- PRISME À BASE CARRÉE ---\n";
-    // Volume = a² * h  =>  h = volume/(a²)
+    // Volume = Aire_base * h, avec Aire_base = c² pour une base carrée  =>  h = volume/(c²)
     for (let a = 0.5; a <= Math.cbrt(volume); a += 0.1) {
       const h = volume / (a * a);
       if (h > 0 && validThousandths(h))
         output += `Prisme base carrée -- Arête: ${a.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
     }
 
+    // --- PRISME À BASE PENTAGONALE ---
+    output += "\n--- PRISME À BASE PENTAGONALE ---\n";
+    // Pour un pentagone régulier : Aire_base = (5*a²)/(4*tan(π/5))
+    // Volume = Aire_base * h  =>  h = volume/Aire_base
+    const aMaxPentVol = Math.sqrt((4 * Math.tan(Math.PI/5) * volume) / 5);
+    for (let a = 0.5; a <= aMaxPentVol; a += 0.1) {
+      const A_base = (5 * a * a) / (4 * Math.tan(Math.PI/5));
+      const h = volume / A_base;
+      if (h > 0 && validThousandths(h) && (h / a >= 0.30 && h / a <= 3.33))
+        output += `Prisme base pentagonale -- Arête: ${a.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+    }
+
+    // --- PRISME À BASE HEXAGONALE ---
+    output += "\n--- PRISME À BASE HEXAGONALE ---\n";
+    // Pour un hexagone régulier : Aire_base = (6*a²)/(4*tan(π/6))
+    // Volume = Aire_base * h  =>  h = volume/Aire_base
+    const aMaxHexVol = Math.sqrt((4 * Math.tan(Math.PI/6) * volume) / 6);
+    for (let a = 0.5; a <= aMaxHexVol; a += 0.1) {
+      const A_base = (6 * a * a) / (4 * Math.tan(Math.PI/6));
+      const h = volume / A_base;
+      if (h > 0 && validThousandths(h) && (h / a >= 0.30 && h / a <= 3.33))
+        output += `Prisme base hexagonale -- Arête: ${a.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+    }
+
     // --- PYRAMIDE À BASE CARRÉE ---
     output += "\n--- PYRAMIDE À BASE CARRÉE ---\n";
-    // Volume = (1/3)*c²*h  =>  h = 3*volume/(c²)
-    for (let c = 0.5; c <= Math.cbrt(volume * 3); c += 0.1) {
-      const h = (3 * volume) / (c * c);
+    // Volume d'une pyramide = (1/3)*Aire_base * h  avec Aire_base = c² pour une base carrée  =>  h = (3*volume)/(c²)
+    for (let a = 0.5; a <= Math.cbrt(3 * volume); a += 0.1) {
+      const h = (3 * volume) / (a * a);
       if (h > 0 && validThousandths(h)) {
-        const ap_base = c / 2.0;
-        const gen = Math.sqrt(h * h + ap_base * ap_base);
-        output += `Pyramide carrée -- Arête: ${c.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${ap_base.toFixed(3)}   Génératrice: ${gen.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+        const R = a / 2.0; // apothème du carré
+        const l = Math.sqrt(h * h + R * R);
+        output += `Pyramide carrée -- Arête: ${a.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${l.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+      }
+    }
+
+    // --- PYRAMIDE À BASE PENTAGONALE ---
+    output += "\n--- PYRAMIDE À BASE PENTAGONALE ---\n";
+    // Pour un pentagone : Aire_base = (5*a²)/(4*tan(π/5))
+    // Volume = (1/3)*Aire_base * h  =>  h = (3*volume)/Aire_base
+    const aMaxPentVolPyr = Math.sqrt((4 * Math.tan(Math.PI/5) * 3 * volume) / 5);
+    for (let a = 0.5; a <= aMaxPentVolPyr; a += 0.1) {
+      const A_base = (5 * a * a) / (4 * Math.tan(Math.PI/5));
+      const h = (3 * volume) / A_base;
+      if (h > 0 && validThousandths(h)) {
+        const R = a / (2 * Math.tan(Math.PI/5));
+        const l = Math.sqrt(h * h + R * R);
+        output += `Pyramide pentagonale -- Arête: ${a.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${l.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
+      }
+    }
+
+    // --- PYRAMIDE À BASE HEXAGONALE ---
+    output += "\n--- PYRAMIDE À BASE HEXAGONALE ---\n";
+    // Pour un hexagone : Aire_base = (6*a²)/(4*tan(π/6))
+    // Volume = (1/3)*Aire_base * h  =>  h = (3*volume)/Aire_base
+    const aMaxHexVolPyr = Math.sqrt((4 * Math.tan(Math.PI/6) * 3 * volume) / 6);
+    for (let a = 0.5; a <= aMaxHexVolPyr; a += 0.1) {
+      const A_base = (6 * a * a) / (4 * Math.tan(Math.PI/6));
+      const h = (3 * volume) / A_base;
+      if (h > 0 && validThousandths(h)) {
+        const R = a / (2 * Math.tan(Math.PI/6));
+        const l = Math.sqrt(h * h + R * R);
+        output += `Pyramide hexagonale -- Arête: ${a.toFixed(1)}   Hauteur: ${h.toFixed(3)}   Apotheme: ${l.toFixed(3)}   Volume: ${volume.toFixed(2)} u³\n`;
       }
     }
 
