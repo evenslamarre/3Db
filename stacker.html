@@ -989,10 +989,7 @@
         <span class="btn-supprimer" onclick="supprimerForme(${index})">[x]</span>
         <strong>${index + 1}. ${forme.type.toUpperCase()}</strong>
         <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
-          <tr>
-            <td><strong>Unité :</strong></td>
-            <td>${forme.unite}</td>
-          </tr>`;
+          `;
         // Affichage des paramètres (hors typeBase)
         for (let key in forme.params) {
           if (key === "typeBase") continue;
