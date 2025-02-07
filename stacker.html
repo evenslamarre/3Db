@@ -1001,20 +1001,27 @@
         <table style="width: 100%; margin-top: 10px; border-collapse: collapse;">
           `;
         // Affichage des paramètres (hors typeBase)
-        for (let key in forme.params) {
-          if (key === "typeBase") continue;
-          let label = key;
-          let value = forme.params[key];
-          if (key === "n") {
-            label = "Nombre de côtés";
-            value = parseInt(value);
-          }
-          html += `
-          <tr>
-            <td><strong>${label} :</strong></td>
-            <td>${value} ${forme.unite}</td>
-          </tr>`;
-        }
+      for (let key in forme.params) {
+             if (key === "typeBase") continue;
+             let label = key;
+             let value = forme.params[key];
+             if (key === "n") {
+              label = "Nombre de côtés";
+              value = parseInt(value);
+              html += `
+             <tr>
+             <td><strong>${label} :</strong></td>
+             <td>${value}</td>
+             </tr>`;
+  } else {
+    html += `
+    <tr>
+      <td><strong>${label} :</strong></td>
+      <td>${value} ${forme.unite}</td>
+    </tr>`;
+  }
+}
+
 
         // Affichage de la génératrice et de l'apothème dès maintenant
         if(forme.calc.generatrice !== undefined) {
