@@ -457,19 +457,29 @@
           calc.perimetreBase = 3 * c;
           calc.generatrice = s1;
         } else if (typeBase === 'n-gone') {
-          const n = parseInt(forme.params.n);
-          const c = parseFloat(forme.params.cote);
-          const base = (n * c * c) / (4 * Math.tan(Math.PI/n));
-          const R = c / (2 * Math.sin(Math.PI/n));
-          const s = Math.sqrt(h * h + R * R);
-          calc.lateral = 0.5 * n * c * s;
-          calc.total = base + calc.lateral;
-          calc.volume = (1/3) * base * h;
-          calc.perimetreBase = n * c;
-          // Pour les n‑gone, ajouter la génératrice et l'apothème de la base
-          calc.generatrice = s; // slant height
-          calc.apotheme = c / (2 * Math.tan(Math.PI/n));
-        }
+       
+  const n = parseInt(forme.params.n);
+  const c = parseFloat(forme.params.cote);
+  const h = parseFloat(forme.params.hauteur);
+  
+  // Calcul de l'aire de la base avec la formule du polygone régulier
+  const base = (n * c * c) / (4 * Math.tan(Math.PI / n));
+  
+  // Calcul de l'apothème de la base
+  const a = c / (2 * Math.tan(Math.PI / n));
+  
+  // Calcul de la génératrice (distance entre l'apex et le milieu d'un côté)
+  const s = Math.sqrt(h * h + a * a);
+  
+  calc.lateral = 0.5 * n * c * s;
+  calc.total = base + calc.lateral;
+  calc.volume = (1/3) * base * h;
+  calc.perimetreBase = n * c;
+  
+  // Affectation des valeurs corrigées
+  calc.generatrice = s; // génératrice correcte
+  calc.apotheme = a;    // apothème de la base
+}
       } else if (forme.type === 'prisme') {
         const typeBase = forme.params.typeBase;
         const h = parseFloat(forme.params.hauteur);
