@@ -567,13 +567,13 @@
       const ny = vx / length;
 
       // Appliquer un décalage (ici 15 pixels) dans la direction du vecteur normal
-      const offset = 15;
+      const offset = 17;
       const labelX = midX + nx * offset;
       const labelY = midY + ny * offset;
 
       // Afficher l'étiquette
       ctx.fillStyle = 'blue';
-      ctx.font = "15px sans-serif";
+      ctx.font = "17px sans-serif";
       ctx.fillText(etiquette, labelX, labelY);
 
       ctx.restore();
@@ -1027,27 +1027,35 @@
 
         // Affichage des autres propriétés calculées
         html += `
-          <tr>
-            <td><strong>Périmètre de la base :</strong></td>
-            <td>${(forme.calc.perimetreBase !== undefined ? forme.calc.perimetreBase.toFixed(3) : "-")} ${forme.unite}</td>
-          </tr>
-          <tr>
-            <td><strong>Aire de la Base :</strong></td>
-            <td>${(forme.calc.total - forme.calc.lateral).toFixed(3)} ${forme.unite}²</td>
-          </tr>
-          <tr>
-            <td><strong>Aire Latérale :</strong></td>
-            <td>${forme.calc.lateral.toFixed(3)} ${forme.unite}²</td>
-          </tr>
-          <tr>
-            <td><strong>Aire Totale :</strong></td>
-            <td>${forme.calc.total.toFixed(3)} ${forme.unite}²</td>
-          </tr>
-          <tr>
-            <td><strong>Volume :</strong></td>
-            <td>${forme.calc.volume.toFixed(3)} ${forme.unite}³</td>
-          </tr>
-        </table>
+         ${ forme.type !== 'sphere' ? `
+        <tr>
+         <td><strong>Périmètre de la base :</strong></td>
+         <td>${(forme.calc.perimetreBase !== undefined ? forme.calc.perimetreBase.toFixed(3) : "-")} ${forme.unite}</td>
+         </tr>
+         <tr>
+         <td><strong>Aire de la Base :</strong></td>
+         <td>${(forme.calc.total - forme.calc.lateral).toFixed(3)} ${forme.unite}²</td>
+            </tr>
+             ` : `
+             <tr>
+              <td><strong>Circonférence :</strong></td>
+             <td>${(2 * Math.PI * parseFloat(forme.params.rayon)).toFixed(3)} ${forme.unite}</td>
+             </tr>
+             `}
+              <tr>
+                 <td><strong>Aire Latérale :</strong></td>
+                <td>${forme.calc.lateral.toFixed(3)} ${forme.unite}²</td>
+                  </tr>
+                 <tr>
+                 <td><strong>Aire Totale :</strong></td>
+                 <td>${forme.calc.total.toFixed(3)} ${forme.unite}²</td>
+                  </tr>
+             <tr>
+             <td><strong>Volume :</strong></td>
+             <td>${forme.calc.volume.toFixed(3)} ${forme.unite}³</td>
+             </tr>
+             </table>
+
         <div class="controles-forme">
           <button onclick="deplacerForme(${index}, 'bas')">Bas</button>
           <button onclick="deplacerForme(${index}, 'haut')">Haut</button>
