@@ -94,6 +94,7 @@
     <!-- Les entrées de paramètres sont insérées dynamiquement -->
   </div>
   <button id="btnAjouterForme">Ajouter la forme</button>
+ 
   <hr>
   <div>
     <label for="unite">Unité de mesure :</label>
@@ -102,6 +103,7 @@
   <div>
     <label for="zoomInput">Zoom (valeur numérique) :</label>
     <input type="number" id="zoomInput" step="any" value="20">
+     <button id="btnToggleLabels">Masquer les lettres</button>
   </div>
   <div class="liste-formes" id="listeFormes">
     <h3>Formes Empilées</h3>
@@ -586,40 +588,50 @@
       return { x: isoX, y: -isoY };
     }
 
-    // --- Dessiner une ligne de cote ---
-    function dessinerLigneCote(ctx, origine, scale, pt1, pt2, etiquette) {
-      const p1 = projeter(pt1.x, pt1.y, pt1.z);
-      const p2 = projeter(pt2.x, pt2.y, pt2.z);
-      const x1 = origine.x + p1.x * scale;
-      const y1 = origine.y + p1.y * scale;
-      const x2 = origine.x + p2.x * scale;
-      const y2 = origine.y + p2.y * scale;
+   let afficherLettres = true; // Track visibility of labels
 
-      ctx.save();
-      ctx.lineWidth = 1;
-      ctx.setLineDash([10, 10]);
-      ctx.strokeStyle = 'blue';
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-      ctx.setLineDash([]);
+document.getElementById('btnToggleLabels').addEventListener('click', function() {
+  afficherLettres = !afficherLettres;
+  this.textContent = afficherLettres ? "Masquer les lettres" : "Afficher les lettres";
+  dessinerScene(); // Redraw to apply changes
+});
 
-      const midX = (x1 + x2) / 2;
-      const midY = (y1 + y2) / 2;
-      const vx = x2 - x1;
-      const vy = y2 - y1;
-      const length = Math.sqrt(vx*vx + vy*vy);
-      const nx = -vy / length;
-      const ny = vx / length;
-      const offset = 17;
-      const labelX = midX + nx * offset;
-      const labelY = midY + ny * offset;
-      ctx.fillStyle = 'blue';
-      ctx.font = "17px sans-serif";
-      ctx.fillText(etiquette, labelX, labelY);
-      ctx.restore();
-    }
+// Update `dessinerLigneCote` to check `afficherLettres`
+function dessinerLigneCote(ctx, origine, scale, pt1, pt2, etiquette) {
+  const p1 = projeter(pt1.x, pt1.y, pt1.z);
+  const p2 = projeter(pt2.x, pt2.y, pt2.z);
+  const x1 = origine.x + p1.x * scale;
+  const y1 = origine.y + p1.y * scale;
+  const x2 = origine.x + p2.x * scale;
+  const y2 = origine.y + p2.y * scale;
+
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.setLineDash([10, 10]);
+  ctx.strokeStyle = 'blue';
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  if (afficherLettres) { // Only draw labels if enabled
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    const vx = x2 - x1;
+    const vy = y2 - y1;
+    const length = Math.sqrt(vx * vx + vy * vy);
+    const nx = -vy / length;
+    const ny = vx / length;
+    const offset = 17;
+    const labelX = midX + nx * offset;
+    const labelY = midY + ny * offset;
+    ctx.fillStyle = 'blue';
+    ctx.font = "17px sans-serif";
+    ctx.fillText(etiquette, labelX, labelY);
+  }
+  ctx.restore();
+}
 
     // --- Fonction utilitaire : point milieu ---
     function pointMilieu(pt1, pt2) {
