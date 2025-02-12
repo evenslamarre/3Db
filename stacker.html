@@ -1089,7 +1089,7 @@ function dessinerLigneCote(ctx, origine, scale, pt1, pt2, etiquette) {
       // Dessin de la cote pour le rayon sur la base
       dessinerLigneCote(ctx, origine, scale,
         { x:0, y:yBas, z:0 },
-        { x:r/Math.sqrt(3), y:yBas, z:-r/Math.sqrt(3) },
+        { x:r, y:yBas, z:0 },
         "r"
       );
     }
