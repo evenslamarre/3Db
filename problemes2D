@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Résolution de Problèmes Géométriques 2D</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f0f0f0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .result {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    select, input, button {
+      padding: 8px;
+      margin: 5px;
+      font-size: 16px;
+    }
+    label {
+      font-size: 16px;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    canvas {
+      background-color: #fff;
+      display: block;
+      margin: 20px auto;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Résolution de Problèmes Géométriques 2D</h1>
+    <div>
+      <select id="shapeSelect">
+        <option value="circle">Cercle</option>
+        <option value="triangle">Triangle</option>
+        <option value="rectangle">Rectangle</option>
+        <option value="square">Carré</option>
+        <option value="ngon">N-gone régulier</option>
+        <option value="diamond">Losange</option>
+        <option value="parallelogram">Parallélogramme</option>
+        <option value="trapezoid">Trapèze</option>
+      </select>
+      <!-- Sélection de l'unité -->
+      <label for="unitSelect">Unité :</label>
+      <select id="unitSelect">
+        <option value="cm">cm</option>
+        <option value="m">m</option>
+        <option value="in">in</option>
+        <option value="ft">ft</option>
+      </select>
+      <!-- Toggle pour afficher uniquement les lettres sur le dessin -->
+      <label for="toggleLabels">
+        <input type="checkbox" id="toggleLabels" checked>
+        Afficher seulement les lettres sur le dessin
+      </label>
+      <div id="inputs"></div>
+      <button id="calculateBtn">Calculer</button>
+    </div>
+    <div id="result" class="result"></div>
+    <!-- Canevas pour le dessin -->
+    <canvas id="canvas" width="400" height="400"></canvas>
+  </div>
+
+  <script>
+    const shapeInputs = {
+      circle: [{ label: 'Rayon', id: 'r' }],
+      triangle: [{ label: 'Base', id: 'b' }, { label: 'Hauteur', id: 'h' }],
+      rectangle: [{ label: 'Longueur', id: 'l' }, { label: 'Largeur', id: 'w' }],
+      square: [{ label: 'Côté', id: 's' }],
+      ngon: [{ label: 'Nombre de côtés', id: 'n' }, { label: 'Longueur du côté', id: 'c' }],
+      diamond: [{ label: 'Diagonale 1', id: 'd1' }, { label: 'Diagonale 2', id: 'd2' }],
+      parallelogram: [{ label: 'Base', id: 'b' }, { label: 'Hauteur', id: 'h' }],
+      trapezoid: [{ label: 'Base 1', id: 'b1' }, { label: 'Base 2', id: 'b2' }, { label: 'Hauteur', id: 'h' }]
+    };
+
+    function updateInputs() {
+      const shape = document.getElementById('shapeSelect').value;
+      const inputsDiv = document.getElementById('inputs');
+      inputsDiv.innerHTML = '';
+      shapeInputs[shape].forEach(inputData => {
+        const div = document.createElement('div');
+        const label = document.createElement('label');
+        label.textContent = `${inputData.label} : `;
+        label.htmlFor = inputData.id;
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.id = inputData.id;
+        input.name = inputData.id;
+        input.step = '0.1';
+        input.placeholder = inputData.label;
+        input.required = true;
+        div.appendChild(label);
+        div.appendChild(input);
+        inputsDiv.appendChild(div);
+      });
+    }
+
+    function drawShape() {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const shape = document.getElementById('shapeSelect').value;
+      const unit = document.getElementById('unitSelect').value;
+      const showLettersOnly = document.getElementById('toggleLabels').checked;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      let scale = 1;
+      ctx.lineWidth = 2;
+      ctx.font = "14px Arial";
+      
+      // Définition d'un offset pour les annotations
+      const offsetX = 10, offsetY = 10;
+
+      switch (shape) {
+        case 'circle': {
+          const r = parseFloat(document.getElementById('r').value);
+          if (isNaN(r) || r <= 0) return;
+          scale = 150 / (2 * r);
+          const radiusPixels = r * scale;
+          ctx.strokeStyle = 'black';
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radiusPixels, 0, 2 * Math.PI);
+          ctx.stroke();
+          // Ligne pointillée bleue pour le rayon
+          ctx.save();
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = 'blue';
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(centerX + radiusPixels, centerY);
+          ctx.stroke();
+          ctx.restore();
+          const labelText = showLettersOnly ? 'r' : `r = ${r} ${unit}`;
+          ctx.fillStyle = 'blue';
+          // Légèrement décalé pour ne pas toucher le cercle
+          ctx.fillText(labelText, centerX + radiusPixels/2, centerY - offsetY);
+          break;
+        }
+        case 'triangle': {
+          const b = parseFloat(document.getElementById('b').value);
+          const h = parseFloat(document.getElementById('h').value);
+          if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) return;
+          scale = Math.min(300 / b, 300 / h);
+          const x1 = centerX - (b * scale) / 2;
+          const y1 = centerY + (h * scale) / 2;
+          const x2 = centerX + (b * scale) / 2;
+          const y2 = y1;
+          const x3 = centerX;
+          const y3 = y1 - h * scale;
+          ctx.strokeStyle = 'black';
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.lineTo(x3, y3);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.save();
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = 'blue';
+          ctx.beginPath();
+          ctx.moveTo(x3, y3);
+          ctx.lineTo(centerX, y1);
+          ctx.stroke();
+          ctx.restore();
+          const heightLabel = showLettersOnly ? 'h' : `h = ${h} ${unit}`;
+          ctx.fillStyle = 'blue';
+          // Déplacer légèrement l'annotation pour éviter le chevauchement
+          ctx.fillText(heightLabel, centerX + offsetX, (y3 + y1) / 2);
+          break;
+        }
+        case 'rectangle': {
+          const l = parseFloat(document.getElementById('l').value);
+          const w = parseFloat(document.getElementById('w').value);
+          if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) return;
+          scale = Math.min(300 / l, 300 / w);
+          const rectWidth = l * scale;
+          const rectHeight = w * scale;
+          const x = centerX - rectWidth / 2;
+          const y = centerY - rectHeight / 2;
+          ctx.strokeStyle = 'black';
+          ctx.strokeRect(x, y, rectWidth, rectHeight);
+          ctx.fillStyle = 'blue';
+          // Annotation pour la longueur (affichée au-dessus, centrée)
+          const lengthLabel = showLettersOnly ? 'l' : `l = ${l} ${unit}`;
+          ctx.fillText(lengthLabel, centerX, y - offsetY);
+          // Annotation pour la largeur (affichée sur le côté gauche, centrée)
+          const widthLabel = showLettersOnly ? 'w' : `w = ${w} ${unit}`;
+          ctx.fillText(widthLabel, x - 40, centerY);
+          break;
+        }
+        case 'square': {
+          const s = parseFloat(document.getElementById('s').value);
+          if (isNaN(s) || s <= 0) return;
+          scale = 300 / s;
+          const side = s * scale;
+          const x = centerX - side / 2;
+          const y = centerY - side / 2;
+          ctx.strokeStyle = 'black';
+          ctx.strokeRect(x, y, side, side);
+          ctx.fillStyle = 'blue';
+          // Annotation pour le côté en haut (centré horizontalement)
+          const sideLabel = showLettersOnly ? 's' : `s = ${s} ${unit}`;
+          ctx.fillText(sideLabel, centerX, y - offsetY);
+          // Annotation sur le côté gauche
+          ctx.fillText(sideLabel, x - 30, centerY);
+          break;
+        }
+        case 'ngon': {
+          const n = parseInt(document.getElementById('n').value);
+          const c = parseFloat(document.getElementById('c').value);
+          if (isNaN(n) || isNaN(c) || n < 3 || c <= 0) return;
+          const R = c / (2 * Math.sin(Math.PI / n));
+          scale = 150 / R;
+          let vertices = [];
+          for (let i = 0; i < n; i++) {
+            const angle = (2 * Math.PI * i) / n - Math.PI / 2;
+            const vx = centerX + R * scale * Math.cos(angle);
+            const vy = centerY + R * scale * Math.sin(angle);
+            vertices.push({ x: vx, y: vy });
+          }
+          ctx.strokeStyle = 'black';
+          ctx.beginPath();
+          ctx.moveTo(vertices[0].x, vertices[0].y);
+          for (let i = 1; i < n; i++) {
+            ctx.lineTo(vertices[i].x, vertices[i].y);
+          }
+          ctx.closePath();
+          ctx.stroke();
+          const apothem = c / (2 * Math.tan(Math.PI / n));
+          const midPoint = {
+            x: (vertices[0].x + vertices[1].x) / 2,
+            y: (vertices[0].y + vertices[1].y) / 2
+          };
+          ctx.save();
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = 'blue';
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(midPoint.x, midPoint.y);
+          ctx.stroke();
+          ctx.restore();
+          const apothemLabel = showLettersOnly ? 'a' : `a = ${apothem.toFixed(4)} ${unit}`;
+          ctx.fillStyle = 'blue';
+          ctx.fillText(apothemLabel, (centerX + midPoint.x) / 2, (centerY + midPoint.y) / 2);
+          break;
+        }
+        case 'diamond': {
+          const d1 = parseFloat(document.getElementById('d1').value);
+          const d2 = parseFloat(document.getElementById('d2').value);
+          if (isNaN(d1) || isNaN(d2) || d1 <= 0 || d2 <= 0) return;
+          scale = Math.min(300 / d1, 300 / d2);
+          const halfD1 = (d1 * scale) / 2;
+          const halfD2 = (d2 * scale) / 2;
+          const top = { x: centerX, y: centerY - halfD1 };
+          const right = { x: centerX + halfD2, y: centerY };
+          const bottom = { x: centerX, y: centerY + halfD1 };
+          const left = { x: centerX - halfD2, y: centerY };
+          ctx.strokeStyle = 'black';
+          ctx.beginPath();
+          ctx.moveTo(top.x, top.y);
+          ctx.lineTo(right.x, right.y);
+          ctx.lineTo(bottom.x, bottom.y);
+          ctx.lineTo(left.x, left.y);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.save();
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = 'blue';
+          ctx.beginPath();
+          ctx.moveTo(top.x, top.y);
+          ctx.lineTo(bottom.x, bottom.y);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(left.x, left.y);
+          ctx.lineTo(right.x, right.y);
+          ctx.stroke();
+          ctx.restore();
+          const labelD1 = showLettersOnly ? 'd₁' : `d1 = ${d1} ${unit}`;
+          const labelD2 = showLettersOnly ? 'd₂' : `d2 = ${d2} ${unit}`;
+          ctx.fillStyle = 'blue';
+          ctx.fillText(labelD1, centerX + 5, centerY - halfD1/2);
+          ctx.fillText(labelD2, centerX + halfD2/2, centerY - 5);
+          break;
+        }
+        case 'parallelogram': {
+          const b = parseFloat(document.getElementById('b').value);
+          const h = parseFloat(document.getElementById('h').value);
+          if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) return;
+          const offset = 0.2 * b;
+          scale = Math.min(300 / (b + offset), 300 / h);
+          const rectWidth = b * scale;
+          const rectHeight = h * scale;
+          const off = offset * scale;
+          const x = centerX - (rectWidth + off) / 2;
+          const y = centerY + rectHeight / 2;
+          const bottomLeft = { x: x, y: y };
+          const bottomRight = { x: x + rectWidth, y: y };
+          const topRight = { x: x + rectWidth + off, y: y - rectHeight };
+          const topLeft = { x: x + off, y: y - rectHeight };
+          ctx.strokeStyle = 'black';
+          ctx.beginPath();
+          ctx.moveTo(bottomLeft.x, bottomLeft.y);
+          ctx.lineTo(bottomRight.x, bottomRight.y);
+          ctx.lineTo(topRight.x, topRight.y);
+          ctx.lineTo(topLeft.x, topLeft.y);
+          ctx.closePath();
+          ctx.stroke();
+          // Pour le parallélogramme, on affiche l'annotation de la hauteur à côté de la verticale
+          ctx.fillStyle = 'blue';
+          const heightLabel = showLettersOnly ? 'h' : `h = ${h} ${unit}`;
+          ctx.fillText(heightLabel, topLeft.x - offset, (topLeft.y + bottomLeft.y) / 2);
+          // Et l'annotation de la base au centre du côté inférieur
+          const baseLabel = showLettersOnly ? 'b' : `b = ${b} ${unit}`;
+          ctx.fillText(baseLabel, (bottomLeft.x + bottomRight.x) / 2, bottomLeft.y + offset);
+          break;
+        }
+        case 'trapezoid': {
+          const b1 = parseFloat(document.getElementById('b1').value);
+          const b2 = parseFloat(document.getElementById('b2').value);
+          const h = parseFloat(document.getElementById('h').value);
+          if (isNaN(b1) || isNaN(b2) || isNaN(h) || b1 <= 0 || b2 <= 0 || h <= 0) return;
+          const diff = (b1 - b2) / 2;
+          scale = Math.min(300 / b1, 300 / h);
+          const bottomLeft = { x: centerX - (b1 * scale) / 2, y: centerY + (h * scale) / 2 };
+          const bottomRight = { x: centerX + (b1 * scale) / 2, y: bottomLeft.y };
+          const topLeft = { x: bottomLeft.x + diff * scale, y: bottomLeft.y - h * scale };
+          const topRight = { x: bottomRight.x - diff * scale, y: bottomLeft.y - h * scale };
+          ctx.strokeStyle = 'black';
+          ctx.beginPath();
+          ctx.moveTo(bottomLeft.x, bottomLeft.y);
+          ctx.lineTo(bottomRight.x, bottomRight.y);
+          ctx.lineTo(topRight.x, topRight.y);
+          ctx.lineTo(topLeft.x, topLeft.y);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.fillStyle = 'blue';
+          // Annotation pour la hauteur à gauche
+          const heightLabel = showLettersOnly ? 'h' : `h = ${h} ${unit}`;
+          ctx.fillText(heightLabel, topLeft.x - offsetX, (topLeft.y + bottomLeft.y) / 2);
+          // Annotation pour la base inférieure
+          const base1Label = showLettersOnly ? 'b₁' : `b1 = ${b1} ${unit}`;
+          ctx.fillText(base1Label, centerX, bottomLeft.y + offsetY);
+          // Annotation pour la base supérieure
+          const base2Label = showLettersOnly ? 'b₂' : `b2 = ${b2} ${unit}`;
+          ctx.fillText(base2Label, centerX, topLeft.y - offsetY);
+          break;
+        }
+        default:
+          break;
+      }
+    }
+
+    function calculateArea() {
+      const shape = document.getElementById('shapeSelect').value;
+      const unit = document.getElementById('unitSelect').value;
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '';
+      let html = '';
+
+      try {
+        switch (shape) {
+          case 'circle': {
+  const r = parseFloat(document.getElementById('r').value);
+  if (isNaN(r) || r <= 0) throw new Error('Rayon invalide');
+
+  const area = Math.PI * r * r;         // Aire
+  const perimeter = 2 * Math.PI * r;    // Circonférence
+
+  html = `
+    <h2>Cercle</h2>
+
+    <p>&emsp;Rayon \\(= ${r}\\) \\(${unit}\\), Diamètre \\(= ${2 * r}\\) \\(${unit}\\)</p>
+
+    <p><b>Calcul de l'aire du cercle</b></p>
+    <p>&emsp;Formule Aire : \\( A = \\pi r^2 \\)</p>
+    <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
+    <p>&emsp;Calcul Aire : \\( A = \\pi \\times (${r})^2 = \\pi \\times ${r * r} \\approx ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+
+    <p><b>Calcul de la circonférence du cercle</b></p>
+    <p>&emsp;Formule Circonférence : \\( P = 2\\pi r \\)</p>
+    <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
+    <p>&emsp;Calcul Circonférence : \\( P = 2\\pi \\times ${r} \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
+
+    <p><b>Trouver le rayon selon la circonférence</b></p>
+    <p>&emsp;Soit la circonférence \\( P \\)</p>
+    <p>&emsp;Formule : \\( P = 2 \\pi r \\)</p>
+    <p>&emsp;Isoler \\( r \\) : \\( r = \\frac{P}{2\\pi} \\)</p>
+    <p>&emsp;Exemple de substitution : si \\( P = ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
+    <p>&emsp;Alors \\( r = \\frac{${perimeter.toFixed(2)}}{2\\pi} \\approx ${(perimeter / (2 * Math.PI)).toFixed(2)} \\)</p>
+
+    <p><b>Trouver le rayon selon l'aire</b></p>
+    <p>&emsp;Soit l'aire \\( A \\)</p>
+    <p>&emsp;Formule : \\( A = \\pi r^2 \\)</p>
+    <p>&emsp;Isoler \\( r \\) : \\( r = \\sqrt{\\frac{A}{\\pi}} \\)</p>
+    <p>&emsp;Substitution : si \\( A = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+    <p>&emsp;Alors \\( r = \\sqrt{\\frac{${area.toFixed(2)}}{\\pi}} \\approx ${Math.sqrt(area / Math.PI).toFixed(2)} \\)</p>
+  `;
+  break;
+}
+
+          case 'triangle': {
+            const b = parseFloat(document.getElementById('b').value);
+            const h = parseFloat(document.getElementById('h').value);
+            if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) throw new Error('Base ou hauteur invalide');
+            const area = 0.5 * b * h;
+            const side = Math.sqrt(Math.pow(b/2, 2) + Math.pow(h, 2));
+            const perimeter = b + 2 * side;
+            html = `
+              <h2>Triangle</h2>
+              <p>Formule Aire : \\( A = \\frac{1}{2} \\times b \\times h \\)</p>
+              <p>Formule Périmètre : \\( P = b + 2\\sqrt{\\left(\\frac{b}{2}\\right)^2 + h^2} \\)</p>
+              <p>Substitution : b = ${b} ${unit}, h = ${h} ${unit}</p>
+              <p>Calcul Aire : \\( A = \\frac{1}{2} \\times ${b} \\times ${h} = ${area.toFixed(2)} \\)</p>
+              <p>Calcul Périmètre : d'abord, \\( \\text{côté} = \\sqrt{\\left(\\frac{${b}}{2}\\right)^2 + ${h}^2} \\approx ${side.toFixed(2)} \\)</p>
+              <p>Puis, \\( P = ${b} + 2\\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\)</p>
+            `;
+            break;
+          }
+          case 'rectangle': {
+            const l = parseFloat(document.getElementById('l').value);
+            const w = parseFloat(document.getElementById('w').value);
+            if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) throw new Error('Longueur ou largeur invalide');
+            const area = l * w;
+            const perimeter = 2 * (l + w);
+            html = `
+              <h2>Rectangle</h2>
+              <p>Formule Aire : \\( A = l \\times w \\)</p>
+              <p>Formule Périmètre : \\( P = 2(l + w) \\)</p>
+              <p>Substitution : l = ${l} ${unit}, w = ${w} ${unit}</p>
+              <p>Calcul Aire : \\( A = ${l} \\times ${w} = ${area.toFixed(2)} \\)</p>
+              <p>Calcul Périmètre : \\( P = 2 \\times (${l} + ${w}) = ${perimeter.toFixed(2)} \\)</p>
+            `;
+            break;
+          }
+          case 'square': {
+            const s = parseFloat(document.getElementById('s').value);
+            if (isNaN(s) || s <= 0) throw new Error('Côté invalide');
+            const area = s * s;
+            const perimeter = 4 * s;
+            html = `
+              <h2>Carré</h2>
+              <p>Formule Aire : \\( A = s^2 \\)</p>
+              <p>Formule Périmètre : \\( P = 4s \\)</p>
+              <p>Substitution : s = ${s} ${unit}</p>
+              <p>Calcul Aire : \\( A = ${s}^2 = ${area.toFixed(2)} \\)</p>
+              <p>Calcul Périmètre : \\( P = 4 \\times ${s} = ${perimeter.toFixed(2)} \\)</p>
+            `;
+            break;
+          }
+          case 'ngon': {
+            const n = parseInt(document.getElementById('n').value);
+            const c = parseFloat(document.getElementById('c').value);
+            if (isNaN(n) || isNaN(c) || n < 3 || c <= 0) throw new Error('Nombre de côtés ou longueur invalide');
+            const apothem = c / (2 * Math.tan(Math.PI / n));
+            const area = (c * apothem * n) / 2;
+            const perimeter = n * c;
+            html = `
+              <h2>N-gone régulier (${n} côtés)</h2>
+              <p>Formule Apothème : \\( a = \\frac{c}{2 \\tan(\\frac{\\pi}{n})} \\)</p>
+              <p>Formule Aire : \\( A = \\frac{c \\times a \\times n}{2} \\)</p>
+              <p>Formule Périmètre : \\( P = n \\times c \\)</p>
+              <p>Substitution : c = ${c} ${unit}, n = ${n}</p>
+              <p>Calcul Apothème : \\( a = \\frac{${c}}{2 \\tan(\\frac{\\pi}{${n}})} \\approx ${apothem.toFixed(4)} \\)</p>
+              <p>Calcul Aire : \\( A = \\frac{${c} \\times ${apothem.toFixed(4)} \\times ${n}}{2} = ${area.toFixed(2)} \\)</p>
+              <p>Calcul Périmètre : \\( P = ${n} \\times ${c} = ${perimeter.toFixed(2)} \\)</p>
+            `;
+            break;
+          }
+          case 'diamond': {
+            const d1 = parseFloat(document.getElementById('d1').value);
+            const d2 = parseFloat(document.getElementById('d2').value);
+            if (isNaN(d1) || isNaN(d2) || d1 <= 0 || d2 <= 0) throw new Error('Diagonales invalides');
+            const area = (d1 * d2) / 2;
+            const side = Math.sqrt(Math.pow(d1/2, 2) + Math.pow(d2/2, 2));
+            const perimeter = 4 * side;
+            html = `
+              <h2>Losange</h2>
+              <p>Formule Aire : \\( A = \\frac{d_1 \\times d_2}{2} \\)</p>
+              <p>Formule Périmètre : \\( P = 4\\times \\sqrt{\\left(\\frac{d_1}{2}\\right)^2 + \\left(\\frac{d_2}{2}\\right)^2} \\)</p>
+              <p>Substitution : d1 = ${d1} ${unit}, d2 = ${d2} ${unit}</p>
+              <p>Calcul Aire : \\( A = \\frac{${d1} \\times ${d2}}{2} = ${area.toFixed(2)} \\)</p>
+              <p>Calcul Périmètre : d'abord, côté = \\( \\sqrt{\\left(\\frac{${d1}}{2}\\right)^2 + \\left(\\frac{${d2}}{2}\\right)^2} \\approx ${side.toFixed(2)} \\)</p>
+              <p>Puis, \\( P = 4 \\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\)</p>
+            `;
+            break;
+          }
+          case 'parallelogram': {
+            const b = parseFloat(document.getElementById('b').value);
+            const h = parseFloat(document.getElementById('h').value);
+            if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) throw new Error('Base ou hauteur invalide');
+            const area = b * h;
+            const side = Math.sqrt(Math.pow(0.2 * b, 2) + Math.pow(h, 2));
+            const perimeter = 2 * b + 2 * side;
+            html = `
+              <h2>Parallélogramme</h2>
+              <p>Formule Aire : \\( A = b \\times h \\)</p>
+              <p>Formule Périmètre : \\( P = 2b + 2\\sqrt{(0.2b)^2 + h^2} \\)</p>
+              <p>Substitution : b = ${b} ${unit}, h = ${h} ${unit}</p>
+              <p>Calcul Aire : \\( A = ${b} \\times ${h} = ${area.toFixed(2)} \\)</p>
+              <p>Calcul Périmètre : d'abord, côté = \\( \\sqrt{(0.2\\times${b})^2 + ${h}^2} \\approx ${side.toFixed(2)} \\)</p>
+              <p>Puis, \\( P = 2\\times ${b} + 2\\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\)</p>
+            `;
+            break;
+          }
+          case 'trapezoid': {
+            const b1 = parseFloat(document.getElementById('b1').value);
+            const b2 = parseFloat(document.getElementById('b2').value);
+            const h = parseFloat(document.getElementById('h').value);
+            if (isNaN(b1) || isNaN(b2) || isNaN(h) || b1 <= 0 || b2 <= 0 || h <= 0) throw new Error('Bases ou hauteur invalide');
+            const area = ((b1 + b2) / 2) * h;
+            const side = Math.sqrt(Math.pow((b1 - b2) / 2, 2) + Math.pow(h, 2));
+            const perimeter = b1 + b2 + 2 * side;
+            html = `
+              <h2>Trapèze</h2>
+              <p>Formule Aire : \\( A = \\frac{b_1 + b_2}{2} \\times h \\)</p>
+              <p>Formule Périmètre : \\( P = b_1 + b_2 + 2\\sqrt{\\left(\\frac{b_1 - b_2}{2}\\right)^2 + h^2} \\)</p>
+              <p>Substitution : b1 = ${b1} ${unit}, b2 = ${b2} ${unit}, h = ${h} ${unit}</p>
+              <p>Calcul Aire : \\( A = \\frac{${b1} + ${b2}}{2} \\times ${h} = ${area.toFixed(2)} \\)</p>
+              <p>Calcul Périmètre : d'abord, côté = \\( \\sqrt{\\left(\\frac{${b1}-${b2}}{2}\\right)^2 + ${h}^2} \\approx ${side.toFixed(2)} \\)</p>
+              <p>Puis, \\( P = ${b1} + ${b2} + 2\\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\)</p>
+            `;
+            break;
+          }
+          default:
+            throw new Error('Forme inconnue');
+        }
+      } catch (e) {
+        html = `<p style="color: red;">Erreur : ${e.message}</p>`;
+      }
+      resultDiv.innerHTML = html;
+      if (window.MathJax) {
+        MathJax.typeset();
+      }
+      drawShape();
+    }
+
+    document.getElementById('toggleLabels').addEventListener('change', drawShape);
+    document.getElementById('shapeSelect').addEventListener('change', updateInputs);
+    document.getElementById('calculateBtn').addEventListener('click', calculateArea);
+    window.addEventListener('load', updateInputs);
+  </script>
+</body>
+</html>
