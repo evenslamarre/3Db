@@ -1241,7 +1241,12 @@ function dessinerLigneCote(ctx, origine, scale, pt1, pt2, etiquette) {
     }
     else {
       // Cas général (cône, cylindre, pyramide, prisme)
-      const aireBase = (forme.calc.total - forme.calc.lateral);
+      let aireBase;
+if (forme.type === 'cylindre' || forme.type === 'prisme') {
+  aireBase = (forme.calc.total - forme.calc.lateral) / 2;
+} else {
+  aireBase = forme.calc.total - forme.calc.lateral;
+}
 
       html += `
         <tr>
