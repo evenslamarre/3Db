@@ -200,10 +200,10 @@
           ctx.strokeRect(x, y, rectWidth, rectHeight);
           ctx.fillStyle = 'blue';
           // Annotation pour la longueur (affichée au-dessus, centrée)
-          const lengthLabel = showLettersOnly ? 'l' : `l = ${l} ${unit}`;
+          const lengthLabel = showLettersOnly ? 'b' : `b = ${l} ${unit}`;
           ctx.fillText(lengthLabel, centerX, y - offsetY);
           // Annotation pour la largeur (affichée sur le côté gauche, centrée)
-          const widthLabel = showLettersOnly ? 'w' : `w = ${w} ${unit}`;
+          const widthLabel = showLettersOnly ? 'h' : `h = ${w} ${unit}`;
           ctx.fillText(widthLabel, x - 40, centerY);
           break;
         }
