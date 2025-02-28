@@ -65,7 +65,7 @@
         <option value="m">m</option>
         <option value="dam">dam</option>
         <option value="hm">hm</option>
-        <option value="m">km</option>
+        <option value="km">km</option>
       </select>
       <!-- Toggle pour afficher uniquement les lettres sur le dessin -->
       <label for="toggleLabels">
@@ -151,7 +151,6 @@
           ctx.restore();
           const labelText = showLettersOnly ? 'r' : `r = ${r} ${unit}`;
           ctx.fillStyle = 'blue';
-          // Légèrement décalé pour ne pas toucher le cercle
           ctx.fillText(labelText, centerX + radiusPixels/2, centerY - offsetY);
           break;
         }
@@ -183,7 +182,6 @@
           ctx.restore();
           const heightLabel = showLettersOnly ? 'h' : `h = ${h} ${unit}`;
           ctx.fillStyle = 'blue';
-          // Déplacer légèrement l'annotation pour éviter le chevauchement
           ctx.fillText(heightLabel, centerX + offsetX, (y3 + y1) / 2);
           break;
         }
@@ -199,11 +197,9 @@
           ctx.strokeStyle = 'black';
           ctx.strokeRect(x, y, rectWidth, rectHeight);
           ctx.fillStyle = 'blue';
-          // Annotation pour la longueur (affichée au-dessus, centrée)
-          const lengthLabel = showLettersOnly ? 'b' : `b = ${l} ${unit}`;
+          const lengthLabel = showLettersOnly ? 'l' : `l = ${l} ${unit}`;
           ctx.fillText(lengthLabel, centerX, y - offsetY);
-          // Annotation pour la largeur (affichée sur le côté gauche, centrée)
-          const widthLabel = showLettersOnly ? 'h' : `h = ${w} ${unit}`;
+          const widthLabel = showLettersOnly ? 'w' : `w = ${w} ${unit}`;
           ctx.fillText(widthLabel, x - 40, centerY);
           break;
         }
@@ -217,10 +213,8 @@
           ctx.strokeStyle = 'black';
           ctx.strokeRect(x, y, side, side);
           ctx.fillStyle = 'blue';
-          // Annotation pour le côté en haut (centré horizontalement)
           const sideLabel = showLettersOnly ? 's' : `s = ${s} ${unit}`;
           ctx.fillText(sideLabel, centerX, y - offsetY);
-          // Annotation sur le côté gauche
           ctx.fillText(sideLabel, x - 30, centerY);
           break;
         }
@@ -324,11 +318,9 @@
           ctx.lineTo(topLeft.x, topLeft.y);
           ctx.closePath();
           ctx.stroke();
-          // Pour le parallélogramme, on affiche l'annotation de la hauteur à côté de la verticale
           ctx.fillStyle = 'blue';
           const heightLabel = showLettersOnly ? 'h' : `h = ${h} ${unit}`;
           ctx.fillText(heightLabel, topLeft.x - offset, (topLeft.y + bottomLeft.y) / 2);
-          // Et l'annotation de la base au centre du côté inférieur
           const baseLabel = showLettersOnly ? 'b' : `b = ${b} ${unit}`;
           ctx.fillText(baseLabel, (bottomLeft.x + bottomRight.x) / 2, bottomLeft.y + offset);
           break;
@@ -353,13 +345,10 @@
           ctx.closePath();
           ctx.stroke();
           ctx.fillStyle = 'blue';
-          // Annotation pour la hauteur à gauche
           const heightLabel = showLettersOnly ? 'h' : `h = ${h} ${unit}`;
           ctx.fillText(heightLabel, topLeft.x - offsetX, (topLeft.y + bottomLeft.y) / 2);
-          // Annotation pour la base inférieure
           const base1Label = showLettersOnly ? 'b₁' : `b1 = ${b1} ${unit}`;
           ctx.fillText(base1Label, centerX, bottomLeft.y + offsetY);
-          // Annotation pour la base supérieure
           const base2Label = showLettersOnly ? 'b₂' : `b2 = ${b2} ${unit}`;
           ctx.fillText(base2Label, centerX, topLeft.y - offsetY);
           break;
@@ -379,79 +368,65 @@
       try {
         switch (shape) {
           case 'circle': {
-  const r = parseFloat(document.getElementById('r').value);
-  if (isNaN(r) || r <= 0) throw new Error('Rayon invalide');
-
-  const area = Math.PI * r * r;         // Aire
-  const perimeter = 2 * Math.PI * r;    // Circonférence
-
+            const r = parseFloat(document.getElementById('r').value);
+            if (isNaN(r) || r <= 0) throw new Error('Rayon invalide');
+            const area = Math.PI * r * r;
+            const perimeter = 2 * Math.PI * r;
+            html = `
+              <h2>Cercle</h2>
+              <p>&emsp;Rayon \\(= ${r}\\) \\(${unit}\\), Diamètre \\(= ${2 * r}\\) \\(${unit}\\)</p>
+              
+              <p><b>Calcul de l'aire du cercle</b></p>
+              <p>&emsp;Formule Aire : \\( A = \\pi r^2 \\)</p>
+              <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
+              <p>&emsp;Calcul Aire : \\( A = \\pi \\times (${r})^2 = \\pi \\times ${r * r} \\approx ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+              
+              <p><b>Calcul de la circonférence du cercle</b></p>
+              <p>&emsp;Formule Circonférence : \\( C = 2\\pi r \\)</p>
+              <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
+              <p>&emsp;Calcul Circonférence : \\( C = 2\\pi \\times ${r} \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
+            `;
+            break;
+          }
+         case 'triangle': {
+  const b = parseFloat(document.getElementById('b').value);
+  const h = parseFloat(document.getElementById('h').value);
+  if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) throw new Error('Base ou hauteur invalide');
+  const area = 0.5 * b * h;
+  const side = Math.sqrt(Math.pow(b/2, 2) + Math.pow(h, 2));
+  const perimeter = b + 2 * side;
   html = `
-    <h2>Cercle</h2>
-
-    <p>&emsp;Rayon \\(= ${r}\\) \\(${unit}\\), Diamètre \\(= ${2 * r}\\) \\(${unit}\\)</p>
-
-    <p><b>Calcul de l'aire du cercle</b></p>
-    <p>&emsp;Formule Aire : \\( A = \\pi r^2 \\)</p>
-    <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
-    <p>&emsp;Calcul Aire : \\( A = \\pi \\times (${r})^2 = \\pi \\times ${r * r} \\approx ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
-
-    <p><b>Calcul de la circonférence du cercle</b></p>
-    <p>&emsp;Formule Circonférence : \\( C = 2\\pi r \\)</p>
-    <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
-    <p>&emsp;Calcul Circonférence : \\( C = 2\\pi \\times ${r} \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
-
-    <p><b>Trouver le rayon selon la circonférence</b></p>
-    <p>&emsp;Soit la circonférence \\( C \\)</p>
-    <p>&emsp;Formule : \\( C = 2 \\pi r \\)</p>
-    <p>&emsp;Isoler \\( r \\) : \\( r = \\frac{C}{2\\pi} \\)</p>
-    <p>&emsp;substitution : si \\( C = ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
-    <p>&emsp;Alors \\( r = \\frac{${perimeter.toFixed(2)}}{2\\pi} \\approx ${(perimeter / (2 * Math.PI)).toFixed(2)} \\)</p>
-
-    <p><b>Trouver le rayon selon l'aire</b></p>
-    <p>&emsp;Soit l'aire \\( A \\)</p>
-    <p>&emsp;Formule : \\( A = \\pi r^2 \\)</p>
-    <p>&emsp;Isoler \\( r \\) : \\( r = \\sqrt{\\frac{A}{\\pi}} \\)</p>
-    <p>&emsp;Substitution : si \\( A = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
-    <p>&emsp;Alors \\( r = \\sqrt{\\frac{${area.toFixed(2)}}{\\pi}} \\approx ${Math.sqrt(area / Math.PI).toFixed(2)} \\)</p>
+    <h2>Triangle</h2>
+    <p><b>Calcul de l'aire du triangle</b></p>
+    <p>&emsp;Formule Aire : \\( A = \\frac{(b \\times h)}{2} \\)</p>
+    <p>&emsp;Substitution : \\( b = ${b} ${unit}, \\; h = ${h} ${unit} \\)</p>
+    <p>&emsp;Calcul Aire : \\( A = \\frac{(${b} \\times ${h})}{2} = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+    
+    <p><b>Calcul du périmètre du triangle</b></p>
+    <p>&emsp;Calcul du côté égal : \\( c = \\sqrt{\\left(\\frac{${b}}{2}\\right)^2 + ${h}^2} \\approx ${side.toFixed(2)} \\)</p>
+    <p>&emsp;Formule Périmètre : \\( P = b + 2c \\)</p>
+    <p>&emsp;Calcul Périmètre : \\( P = ${b} + 2 \\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
   `;
   break;
 }
 
-          case 'triangle': {
-            const b = parseFloat(document.getElementById('b').value);
-            const h = parseFloat(document.getElementById('h').value);
-            if (isNaN(b) || isNaN(h) || b <= 0 || h <= 0) throw new Error('Base ou hauteur invalide');
-            const area = 0.5 * b * h;
-            const side = Math.sqrt(Math.pow(b/2, 2) + Math.pow(h, 2));
-            const perimeter = b + 2 * side;
-            html = `
-              <h2>Triangle</h2>
-              <p>Formule Aire : \\( A = \\frac{1}{2} \\times b \\times h \\)</p>
-              <p>Formule Périmètre : \\( P = b + 2\\sqrt{\\left(\\frac{b}{2}\\right)^2 + h^2} \\)</p>
-              <p>Substitution : b = ${b} ${unit}, h = ${h} ${unit}</p>
-              <p>Calcul Aire : \\( A = \\frac{1}{2} \\times ${b} \\times ${h} = ${area.toFixed(2)} \\)</p>
-              <p>Calcul Périmètre : d'abord, \\( \\text{côté} = \\sqrt{\\left(\\frac{${b}}{2}\\right)^2 + ${h}^2} \\approx ${side.toFixed(2)} \\)</p>
-              <p>Puis, \\( P = ${b} + 2\\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\)</p>
-            `;
-            break;
-          }
           case 'rectangle': {
             const l = parseFloat(document.getElementById('l').value);
             const w = parseFloat(document.getElementById('w').value);
-            if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) throw new Error('Longueur ou largeur invalide');
+            if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) throw new Error('Base ou hauteur invalide');
             const area = l * w;
             const perimeter = 2 * (l + w);
             html = `
               <h2>Rectangle</h2>
-              <p><b>Trouver l'aire du rectangle</b></p>
+              <p><b>Calcul de l'aire du rectangle</b></p>
               <p>&emsp;Formule Aire : \\( A = b \\times h \\)</p>
-              <p>&emsp;Substitution :<b> b = ${l} ${unit}, h = ${w} ${unit}</b></p>
+              <p>&emsp;Substitution : \\( b = ${l} ${unit}, h = ${w} ${unit} \\)</p>
               <p>&emsp;Calcul Aire : \\( A = ${l} \\times ${w} = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
-              <p></p>
-              <p><b>Trouver le périmètre du rectangle</b></p>
+              
+              <p><b>Calcul du périmètre du rectangle</b></p>
               <p>&emsp;Formule Périmètre : \\( P = 2(b + h) \\)</p>
-              <p>&emsp;Substitution : <b>b = ${l} ${unit}, h = ${w} ${unit}</b></p>
-              <p>&emsp;Calcul Périmètre : \\( P = 2 \\times (${l} + ${w}) = ${perimeter.toFixed(2)}\\) \\(${unit}\\)</p>
+              <p>&emsp;Substitution : \\( b = ${l} ${unit}, h = ${w} ${unit} \\)</p>
+              <p>&emsp;Calcul Périmètre : \\( P = 2 \\times (${l} + ${w}) = ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
             `;
             break;
           }
@@ -462,33 +437,58 @@
             const perimeter = 4 * s;
             html = `
               <h2>Carré</h2>
-              <p>Formule Aire : \\( A = c^2 \\)</p>
-              <p>Formule Périmètre : \\( P = 4 \\times c \\)</p>
-              <p>Substitution : c = ${s} ${unit}</p>
-              <p>Calcul Aire : \\( A = ${s}^2 = ${area.toFixed(2)} \\)</p>
-              <p>Calcul Périmètre : \\( P = 4 \\times ${s} = ${perimeter.toFixed(2)} \\)</p>
+              <p><b>Calcul de l'aire du carré</b></p>
+              <p>&emsp;Formule Aire : \\( A = s^2 \\)</p>
+              <p>&emsp;Substitution : \\( s = ${s} ${unit} \\)</p>
+              <p>&emsp;Calcul Aire : \\( A = ${s}^2 = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+              
+              <p><b>Calcul du périmètre du carré</b></p>
+              <p>&emsp;Formule Périmètre : \\( P = 4s \\)</p>
+              <p>&emsp;Substitution : \\( s = ${s} ${unit} \\)</p>
+              <p>&emsp;Calcul Périmètre : \\( P = 4 \\times ${s} = ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
             `;
             break;
           }
-          case 'ngon': {
-            const n = parseInt(document.getElementById('n').value);
-            const c = parseFloat(document.getElementById('c').value);
-            if (isNaN(n) || isNaN(c) || n < 3 || c <= 0) throw new Error('Nombre de côtés ou longueur invalide');
-            const apothem = c / (2 * Math.tan(Math.PI / n));
-            const area = (c * apothem * n) / 2;
-            const perimeter = n * c;
-            html = `
-              <h2>N-gone régulier (${n} côtés)</h2>
-              <p>Formule Apothème : \\( a = \\frac{c}{2 \\tan(\\frac{\\pi}{n})} \\)</p>
-              <p>Formule Aire : \\( A = \\frac{c \\times a \\times n}{2} \\)</p>
-              <p>Formule Périmètre : \\( P = n \\times c \\)</p>
-              <p>Substitution : c = ${c} ${unit}, n = ${n}</p>
-              <p>Calcul Apothème : \\( a = \\frac{${c}}{2 \\tan(\\frac{\\pi}{${n}})} \\approx ${apothem.toFixed(4)} \\)</p>
-              <p>Calcul Aire : \\( A = \\frac{${c} \\times ${apothem.toFixed(4)} \\times ${n}}{2} = ${area.toFixed(2)} \\)</p>
-              <p>Calcul Périmètre : \\( P = ${n} \\times ${c} = ${perimeter.toFixed(2)} \\)</p>
-            `;
-            break;
-          }
+      case 'ngon': {
+  const n = parseInt(document.getElementById('n').value);
+  const c = parseFloat(document.getElementById('c').value);
+  if (isNaN(n) || isNaN(c) || n < 3 || c <= 0) 
+    throw new Error('Nombre de côtés ou longueur invalide');
+
+  // Calcul de l'apothème
+  const apothem = c / (2 * Math.tan(Math.PI / n));
+  const apothemRounded = parseFloat(apothem.toFixed(2));
+  const tanVal = Math.tan(Math.PI / n);
+  const tanValRounded = parseFloat(tanVal.toFixed(2));
+
+  // Calcul complet de l'aire en utilisant l'apothème arrondi
+  const product = c * apothemRounded * n;
+  const area = product / 2;
+  const perimeter = n * c;
+
+  html = `
+    <h2>N-gone régulier (${n} côtés)</h2>
+    
+    <p><b>Calcul de l'apothème du n-gone</b></p>
+    <p>&emsp;Formule : \\( a = \\frac{c}{2\\tan\\left(\\frac{\\pi}{n}\\right)} \\)</p>
+    <p>&emsp;Substitution : \\( c = ${c} ${unit}, \\; n = ${n}, \\; \\tan\\left(\\frac{\\pi}{n}\\right) \\approx ${tanValRounded} \\)</p>
+    <p>&emsp;Calcul substitué : \\( a = \\frac{${c}}{2 \\times ${tanValRounded}} = \\frac{${c}}{${(2 * tanValRounded).toFixed(2)}} \\approx ${apothemRounded} \\) \\(${unit}\\)</p>
+    
+    <p><b>Calcul de l'aire du n-gone</b></p>
+    <p>&emsp;Formule : \\( A = \\frac{c \\times a \\times n}{2} \\)</p>
+    <p>&emsp;Substitution : \\( c = ${c} ${unit}, \\; a = ${apothemRounded} ${unit}, \\; n = ${n} \\)</p>
+    <p>&emsp;Calcul substitué : \\( A = \\frac{${c} \\times ${apothemRounded} \\times ${n}}{2} = \\frac{${(c * apothemRounded * n).toFixed(2)}}{2} = ${(c * apothemRounded * n / 2).toFixed(2)} \\) \\(${unit}^2\\)</p>
+    
+    <p><b>Calcul du périmètre du n-gone</b></p>
+    <p>&emsp;Formule : \\( P = n \\times c \\)</p>
+    <p>&emsp;Substitution : \\( n = ${n}, \\; c = ${c} ${unit} \\)</p>
+    <p>&emsp;Calcul substitué : \\( P = ${n} \\times ${c} = ${(n * c).toFixed(2)} \\) \\(${unit}\\)</p>
+  `;
+  break;
+}
+
+
+
           case 'diamond': {
             const d1 = parseFloat(document.getElementById('d1').value);
             const d2 = parseFloat(document.getElementById('d2').value);
@@ -498,12 +498,15 @@
             const perimeter = 4 * side;
             html = `
               <h2>Losange</h2>
-              <p>Formule Aire : \\( A = \\frac{d_1 \\times d_2}{2} \\)</p>
-              <p>Formule Périmètre : \\( P = 4\\times \\sqrt{\\left(\\frac{d_1}{2}\\right)^2 + \\left(\\frac{d_2}{2}\\right)^2} \\)</p>
-              <p>Substitution : d1 = ${d1} ${unit}, d2 = ${d2} ${unit}</p>
-              <p>Calcul Aire : \\( A = \\frac{${d1} \\times ${d2}}{2} = ${area.toFixed(2)} \\)</p>
-              <p>Calcul Périmètre : d'abord, côté = \\( \\sqrt{\\left(\\frac{${d1}}{2}\\right)^2 + \\left(\\frac{${d2}}{2}\\right)^2} \\approx ${side.toFixed(2)} \\)</p>
-              <p>Puis, \\( P = 4 \\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\)</p>
+              <p><b>Calcul de l'aire du losange</b></p>
+              <p>&emsp;Formule Aire : \\( A = \\frac{d_1 \\times d_2}{2} \\)</p>
+              <p>&emsp;Substitution : \\( d_1 = ${d1} ${unit}, d_2 = ${d2} ${unit} \\)</p>
+              <p>&emsp;Calcul Aire : \\( A = \\frac{${d1} \\times ${d2}}{2} = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+              
+              <p><b>Calcul du périmètre du losange</b></p>
+              <p>&emsp;Calcul du côté : \\( c = \\sqrt{\\left(\\frac{d_1}{2}\\right)^2 + \\left(\\frac{d_2}{2}\\right)^2} \\approx ${side.toFixed(2)} \\)</p>
+              <p>&emsp;Formule Périmètre : \\( P = 4c \\)</p>
+              <p>&emsp;Calcul Périmètre : \\( P \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
             `;
             break;
           }
@@ -516,12 +519,15 @@
             const perimeter = 2 * b + 2 * side;
             html = `
               <h2>Parallélogramme</h2>
-              <p>Formule Aire : \\( A = b \\times h \\)</p>
-              <p>Formule Périmètre : \\( P = 2b + 2\\sqrt{(0.2b)^2 + h^2} \\)</p>
-              <p>Substitution : b = ${b} ${unit}, h = ${h} ${unit}</p>
-              <p>Calcul Aire : \\( A = ${b} \\times ${h} = ${area.toFixed(2)} \\)</p>
-              <p>Calcul Périmètre : d'abord, côté = \\( \\sqrt{(0.2\\times${b})^2 + ${h}^2} \\approx ${side.toFixed(2)} \\)</p>
-              <p>Puis, \\( P = 2\\times ${b} + 2\\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\)</p>
+              <p><b>Calcul de l'aire du parallélogramme</b></p>
+              <p>&emsp;Formule Aire : \\( A = b \\times h \\)</p>
+              <p>&emsp;Substitution : \\( b = ${b} ${unit}, h = ${h} ${unit} \\)</p>
+              <p>&emsp;Calcul Aire : \\( A = ${b} \\times ${h} = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+              
+              <p><b>Calcul du périmètre du parallélogramme</b></p>
+              <p>&emsp;Calcul du côté oblique : \\( c = \\sqrt{(0.2b)^2 + h^2} \\approx ${side.toFixed(2)} \\)</p>
+              <p>&emsp;Formule Périmètre : \\( P = 2b + 2c \\)</p>
+              <p>&emsp;Calcul Périmètre : \\( P \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
             `;
             break;
           }
@@ -535,12 +541,15 @@
             const perimeter = b1 + b2 + 2 * side;
             html = `
               <h2>Trapèze</h2>
-              <p>Formule Aire : \\( A = \\frac{b_1 + b_2}{2} \\times h \\)</p>
-              <p>Formule Périmètre : \\( P = b_1 + b_2 + 2\\sqrt{\\left(\\frac{b_1 - b_2}{2}\\right)^2 + h^2} \\)</p>
-              <p>Substitution : b1 = ${b1} ${unit}, b2 = ${b2} ${unit}, h = ${h} ${unit}</p>
-              <p>Calcul Aire : \\( A = \\frac{${b1} + ${b2}}{2} \\times ${h} = ${area.toFixed(2)} \\)</p>
-              <p>Calcul Périmètre : d'abord, côté = \\( \\sqrt{\\left(\\frac{${b1}-${b2}}{2}\\right)^2 + ${h}^2} \\approx ${side.toFixed(2)} \\)</p>
-              <p>Puis, \\( P = ${b1} + ${b2} + 2\\times ${side.toFixed(2)} \\approx ${perimeter.toFixed(2)} \\)</p>
+              <p><b>Calcul de l'aire du trapèze</b></p>
+              <p>&emsp;Formule Aire : \\( A = \\frac{b_1 + b_2}{2} \\times h \\)</p>
+              <p>&emsp;Substitution : \\( b_1 = ${b1} ${unit}, b_2 = ${b2} ${unit}, h = ${h} ${unit} \\)</p>
+              <p>&emsp;Calcul Aire : \\( A = \\frac{${b1} + ${b2}}{2} \\times ${h} = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+              
+              <p><b>Calcul du périmètre du trapèze</b></p>
+              <p>&emsp;Calcul du côté oblique : \\( c = \\sqrt{\\left(\\frac{b_1 - b_2}{2}\\right)^2 + h^2} \\approx ${side.toFixed(2)} \\)</p>
+              <p>&emsp;Formule Périmètre : \\( P = b_1 + b_2 + 2c \\)</p>
+              <p>&emsp;Calcul Périmètre : \\( P \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
             `;
             break;
           }
