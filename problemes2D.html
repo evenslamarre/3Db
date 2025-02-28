@@ -367,27 +367,42 @@
 
       try {
         switch (shape) {
-          case 'circle': {
-            const r = parseFloat(document.getElementById('r').value);
-            if (isNaN(r) || r <= 0) throw new Error('Rayon invalide');
-            const area = Math.PI * r * r;
-            const perimeter = 2 * Math.PI * r;
-            html = `
-              <h2>Cercle</h2>
-              <p>&emsp;Rayon \\(= ${r}\\) \\(${unit}\\), Diamètre \\(= ${2 * r}\\) \\(${unit}\\)</p>
-              
-              <p><b>Calcul de l'aire du cercle</b></p>
-              <p>&emsp;Formule Aire : \\( A = \\pi r^2 \\)</p>
-              <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
-              <p>&emsp;Calcul Aire : \\( A = \\pi \\times (${r})^2 = \\pi \\times ${r * r} \\approx ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
-              
-              <p><b>Calcul de la circonférence du cercle</b></p>
-              <p>&emsp;Formule Circonférence : \\( C = 2\\pi r \\)</p>
-              <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
-              <p>&emsp;Calcul Circonférence : \\( C = 2\\pi \\times ${r} \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
-            `;
-            break;
-          }
+      case 'circle': {
+  const r = parseFloat(document.getElementById('r').value);
+  if (isNaN(r) || r <= 0) throw new Error('Rayon invalide');
+  const area = Math.PI * r * r;
+  const perimeter = 2 * Math.PI * r;
+  // Calcul du rayon à partir de l'aire: r = √(A/π)
+  const rFromArea = Math.sqrt(area / Math.PI);
+  // Calcul du rayon à partir de la circonférence: r = C / (2π)
+  const rFromPerimeter = perimeter / (2 * Math.PI);
+  
+  html = `
+    <h2>Cercle</h2>
+    <p>&emsp;Rayon \\(= ${r}\\) \\(${unit}\\), Diamètre \\(= ${2 * r}\\) \\(${unit}\\)</p>
+    
+    <p><b>Calcul de l'aire du cercle</b></p>
+    <p>&emsp;Formule Aire : \\( A = \\pi r^2 \\)</p>
+    <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
+    <p>&emsp;Calcul Aire : \\( A = \\pi \\times (${r})^2 = \\pi \\times ${r * r} \\approx ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+    
+    <p><b>Calcul de la circonférence du cercle</b></p>
+    <p>&emsp;Formule Circonférence : \\( C = 2\\pi r \\)</p>
+    <p>&emsp;Substitution : \\( r = ${r} \\) \\(${unit}\\)</p>
+    <p>&emsp;Calcul Circonférence : \\( C = 2\\pi \\times ${r} \\approx ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
+    
+    <p><b>Calcul du rayon à partir de l'aire</b></p>
+    <p>&emsp;Formule : \\( r = \\sqrt{\\frac{A}{\\pi}} \\)</p>
+    <p>&emsp;Substitution : \\( A = ${area.toFixed(2)} \\) \\(${unit}^2\\)</p>
+    <p>&emsp;Calcul : \\( r = \\sqrt{\\frac{${area.toFixed(2)}}{\\pi}} \\approx ${rFromArea.toFixed(2)} \\) \\(${unit}\\)</p>
+    
+    <p><b>Calcul du rayon à partir de la circonférence</b></p>
+    <p>&emsp;Formule : \\( r = \\frac{C}{2\\pi} \\)</p>
+    <p>&emsp;Substitution : \\( C = ${perimeter.toFixed(2)} \\) \\(${unit}\\)</p>
+    <p>&emsp;Calcul : \\( r = \\frac{${perimeter.toFixed(2)}}{2\\pi} \\approx ${rFromPerimeter.toFixed(2)} \\) \\(${unit}\\)</p>
+  `;
+  break;
+}
          case 'triangle': {
   const b = parseFloat(document.getElementById('b').value);
   const h = parseFloat(document.getElementById('h').value);
